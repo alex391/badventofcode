@@ -10,16 +10,20 @@ public class Day2 {
         Scanner scanner = new Scanner(f);
         int x = 0;
         int y = 0;
+        int aim = 0;
         while (scanner.hasNextLine()){
             switch (scanner.next()){
                 case "forward":
-                    x += scanner.nextInt();
+                    int distance = scanner.nextInt();
+                    x += distance;
+                    y += aim * distance;
+
                 break;
                 case "down":
-                    y += scanner.nextInt();
+                    aim += scanner.nextInt();
                 break;
                 case "up":
-                    y -= scanner.nextInt();
+                    aim -= scanner.nextInt();
                 break;
             }
 
