@@ -24,10 +24,4 @@ public class ReadFile{
         scanner.close();
         return list;
     }
-    public static void main(String[] args) throws FileNotFoundException{
-        List<Integer> file = ReadFile.readin("day3/input.txt");
-        for(int i:file){
-            System.out.println(Integer.toBinaryString(i));
-        }
-    }
 }
