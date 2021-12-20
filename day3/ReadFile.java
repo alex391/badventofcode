@@ -14,13 +14,20 @@ public class ReadFile{
         while (scanner.hasNextLine()){
             String line = scanner.nextLine();
             char[] arr = line.toCharArray();
-            int 
+            int binary = 0;
             for (int i = 0; i < arr.length; i ++){
-
-                counts[i] += (arr[i] == '1' ? 1 : -1);
+                binary |= (arr[i] == '1') ? 1 : 0;
+                binary <<= 1;
             }
+            list.add(binary);
         }
         scanner.close();
         return list;
+    }
+    public static void main(String[] args) throws FileNotFoundException{
+        List<Integer> file = ReadFile.readin("day3/input.txt");
+        for(int i:file){
+            System.out.println(Integer.toBinaryString(i));
+        }
     }
 }
