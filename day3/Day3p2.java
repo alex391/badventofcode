@@ -15,15 +15,41 @@ public class Day3p2 {
             Iterator<Integer> itt = in.listIterator();
             int count = 0;
             while(itt.hasNext()){
-                Integer next = itt.next();
+                int next = itt.next();
+                //basically what I did in part one, but this time vertically
                 count += ((next >> i) & 1) == 1 ? 1 : -1;
             }
-            System.out.println(count);
-            //then eliminate
+            int toEleimante = (count >= 0) ? 1 : 0; //If 0 and 1 are equally common, keep values with a 1 in the position being considered.
+            final int finalI = i; //inner classes can't be initialized with variables that can change, so final
+            in.removeIf(j -> ((j >> finalI) & 1) == toEleimante);
             i --;
-            if (i <= 0) break; //TODO remove this exit condition once we're done
-            
         }
+        o2 = in.get(0);
+        System.out.println(Integer.toBinaryString(i));
+        in = ReadFile.readin("day3/input.txt");
+        //then, the co2 rating
+        int co2;
+        i = 12;
+        //I know I shouldn't repeat myself, but:
+        while (in.size() > 1){ //exit when there is only one number left
+            //count
+            Iterator<Integer> itt = in.listIterator();
+            int count = 0;
+            while(itt.hasNext()){
+                int next = itt.next();
+                //basically what I did in part one, but this time vertically
+                count += ((next >> i) & 1) == 1 ? 1 : -1;
+            }
+            int toEleimante = (count <= 0) ? 0 : 1; //If 0 and 1 are equally common, keep values with a 1 in the position being considered.
+            final int finalI = i; //inner classes can't be initialized with variables that can change so final
+            in.removeIf(j -> ((j >> finalI) & 1) == toEleimante);
+            i --;
+        }
+        for(int k:in){
+            System.out.println(Integer.toBinaryString(k));
+        }
+        //System.out.println(o2 * co2);
+
     }
     
 }
