@@ -19,7 +19,7 @@ public class ReadFile{
                 binary |= (arr[i] == '1') ? 1 : 0;
                 binary <<= 1; //This is adding on an extra 0
             }
-            list.add(binary);
+            list.add(binary >> 1); // and this is a dumb workaround myabe?
         }
         scanner.close();
         return list;
@@ -28,7 +28,7 @@ public class ReadFile{
     public static void main(String[] args) throws FileNotFoundException {
         List<Integer> list = readin("day3/input.txt");
         for(int i: list){
-            System.out.println(Integer.toBinaryString(i));
+            System.out.printf("%12d\n",Long.parseLong(Integer.toBinaryString(i)));
         }
 
     }

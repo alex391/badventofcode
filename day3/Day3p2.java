@@ -9,7 +9,7 @@ public class Day3p2 {
         List<Integer> in = ReadFile.readin("day3/input.txt");
         //First, find the O2 rating
         int o2;
-        int i = 12;
+        int i = 11;
         while (in.size() > 1){ //exit when there is only one number left
             //count
             Iterator<Integer> itt = in.listIterator();
@@ -29,7 +29,7 @@ public class Day3p2 {
         in = ReadFile.readin("day3/input.txt");
         //then, the co2 rating
         int co2;
-        i = 12;
+        i = 11;
         //I know I shouldn't repeat myself, but:
         while (in.size() > 1){ //exit when there is only one number left
             //count
@@ -48,7 +48,8 @@ public class Day3p2 {
         for(int k:in){
             System.out.println(Integer.toBinaryString(k));
         }
-        //System.out.println(o2 * co2);
+        co2 = in.get(0);
+        System.out.println(co2 * o2);
 
     }
     
