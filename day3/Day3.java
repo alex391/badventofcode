@@ -25,7 +25,9 @@ public class Day3 {
             if(counts[i] > 0){
                 gamma |= 1;
             }
+            System.out.println(counts[i]);
         }
+
         int epsilon = ~gamma & 0xFFF;
         System.out.println(epsilon * gamma);
     }
