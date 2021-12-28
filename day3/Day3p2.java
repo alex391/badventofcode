@@ -39,7 +39,7 @@ public class Day3p2 {
             while(itt.hasNext()){
                 int next = itt.next();
                 //basically what I did in part one, but this time vertically
-                count += ((next >> i) & 1) == 1 ? -1 : 1;
+                count += ((next >> i) & 1) == 1 ? -1 : 1; //flipped
             }
             int toEleimante = (count > 0) ? 1 : 0; //If 0 and 1 are equally common, keep values with a 0 in the position being considered.
             final int finalI = i; //inner classes can't be initialized with variables that can change so final

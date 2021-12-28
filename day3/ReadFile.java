@@ -30,7 +30,7 @@ public class ReadFile{
     public static void main(String[] args) throws FileNotFoundException {
         List<Integer> list = readin("day3/input.txt");
         for(int i: list){
-            System.out.printf("%12d\n",Long.parseLong(Integer.toBinaryString(i)));
+            System.out.printf("%12d\n",Long.parseLong(Integer.toBinaryString(i))); //my dumb way of adding in spaces
         }
 
     }
