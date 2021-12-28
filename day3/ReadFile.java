@@ -15,11 +15,13 @@ public class ReadFile{
             String line = scanner.nextLine();
             char[] arr = line.toCharArray();
             int binary = 0;
-            for (int i = 0; i < arr.length; i ++){
+            int i = 0;
+            do {
+                binary <<= 1;
                 binary |= (arr[i] == '1') ? 1 : 0;
-                binary <<= 1; //This is adding on an extra 0
-            }
-            list.add(binary >> 1); // and this is a dumb workaround myabe?
+                i ++;
+            } while (i < arr.length);
+            list.add(binary);
         }
         scanner.close();
         return list;
