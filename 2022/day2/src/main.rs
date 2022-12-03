@@ -26,7 +26,7 @@ fn main() {
         pairs.push(split);
     }
     let mut score = 0;
-    for pair in pairs {
+    for pair in pairs.clone() {
         match pair[1] {
             "X" => {
                 score += 1;
@@ -49,7 +49,37 @@ fn main() {
             OUTCOME::Loss => () // no need to add zero
         }
     }
-    println!("{score}")
+    println!("Part 1: {score}");
+
+    score = 0;
+    for pair in pairs {
+        // determine if we win
+        match pair[1] {
+            "Z" => {
+                score += 6
+            }
+            "Y" => {
+                score += 3
+            }
+            "X" => (),
+            _ => panic!("Incorrect code")
+        }
+        // then add the score for what we threw
+        match play(pair) {
+            "A" => {
+                score += 1;
+            },
+            "B" => {
+                score += 2;
+            },
+            "C" => {
+                score += 3;
+            },
+            _ => panic!("Incorrect code") 
+        }
+    }
+    println!("Part 2: {score}");
+
 }
 
 /// Determine if we won this game.
@@ -71,6 +101,32 @@ fn won(pair: Vec<&str>) -> OUTCOME {
             "X" => return OUTCOME::Win,
             "Y" => return OUTCOME::Loss,
             "Z" => return OUTCOME::Tie,
+            _ => panic!("Incorrect code")
+        },
+        _ => panic!("Incorrect code")
+    };
+}
+
+/// based on the pair, determine what to play next
+fn play(pair: Vec<&str>) -> &str {
+    // X means throw, Y means draw, Z means win
+    match pair[0] {
+        "A" => match pair[1] { // Rock
+            "X" => return "C",
+            "Y" => return "A",
+            "Z" => return "B",
+            _ => panic!("Incorrect code")
+        },
+        "B" => match pair[1] {  // Paper
+            "X" => return "A",
+            "Y" => return "B",
+            "Z" => return "C",
+            _ => panic!("Incorrect code")
+        },
+        "C" => match pair[1] { // Scissors
+            "X" => return "B",
+            "Y" => return "C",
+            "Z" => return "A",
             _ => panic!("Incorrect code")
         },
         _ => panic!("Incorrect code")
