@@ -28,17 +28,18 @@ fn find_misplaced(rucksack: [&str; 2]) -> char {
     }
     panic!("Something went wrong finding the letter that was misplaced!")
 }
+
 /// Calculate the priority
 fn priority(item: char) -> u32 {
     // this is a unicode hack
-    let a_offset: u32 = 'a' as u32;
-    let A_offset: u32 = 'A' as u32;
+    let lower_offset: u32 = 'a' as u32;
+    let upper_offset: u32 = 'A' as u32;
     if item.is_lowercase() {
         let item = item as u32;
-        return (item - a_offset) + 1;
+        return (item - lower_offset) + 1;
     } else {
         let item = item as u32;
-        return (item - A_offset) + 27;
+        return (item - upper_offset) + 27;
     }
 
 }
