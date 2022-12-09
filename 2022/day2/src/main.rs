@@ -1,4 +1,4 @@
-use std::{fs};
+use std::fs;
 
 enum OUTCOME  {
     Win,
@@ -22,7 +22,7 @@ fn main() {
     let contents = contents.lines();
     let mut pairs: Vec<Vec<&str>> = Vec::new();
     for line in contents {
-        let split: Vec<&str> = line.split(" ").collect();
+        let split: Vec<&str> = line.split(' ').collect();
         pairs.push(split);
     }
     let mut score = 0;
@@ -86,25 +86,25 @@ fn main() {
 fn won(pair: Vec<&str>) -> OUTCOME {
     match pair[0] {
         "A" => match pair[1] { 
-            "X" => return OUTCOME::Tie,
-            "Y" => return OUTCOME::Win,
-            "Z" => return OUTCOME::Loss,
+            "X" => OUTCOME::Tie,
+            "Y" => OUTCOME::Win,
+            "Z" => OUTCOME::Loss,
             _ => panic!("Incorrect code")
         },
         "B" => match pair[1] { 
-            "X" => return OUTCOME::Loss,
-            "Y" => return OUTCOME::Tie,
-            "Z" => return OUTCOME::Win,
+            "X" => OUTCOME::Loss,
+            "Y" => OUTCOME::Tie,
+            "Z" => OUTCOME::Win,
             _ => panic!("Incorrect code")
         },
         "C" => match pair[1] { 
-            "X" => return OUTCOME::Win,
-            "Y" => return OUTCOME::Loss,
-            "Z" => return OUTCOME::Tie,
+            "X" => OUTCOME::Win,
+            "Y" => OUTCOME::Loss,
+            "Z" => OUTCOME::Tie,
             _ => panic!("Incorrect code")
         },
         _ => panic!("Incorrect code")
-    };
+    }
 }
 
 /// based on the pair, determine what to play next
@@ -112,23 +112,23 @@ fn play(pair: Vec<&str>) -> &str {
     // X means throw, Y means draw, Z means win
     match pair[0] {
         "A" => match pair[1] { // Rock
-            "X" => return "C",
-            "Y" => return "A",
-            "Z" => return "B",
+            "X" => "C",
+            "Y" => "A",
+            "Z" => "B",
             _ => panic!("Incorrect code")
         },
         "B" => match pair[1] {  // Paper
-            "X" => return "A",
-            "Y" => return "B",
-            "Z" => return "C",
+            "X" => "A",
+            "Y" => "B",
+            "Z" => "C",
             _ => panic!("Incorrect code")
         },
         "C" => match pair[1] { // Scissors
-            "X" => return "B",
-            "Y" => return "C",
-            "Z" => return "A",
+            "X" => "B",
+            "Y" => "C",
+            "Z" => "A",
             _ => panic!("Incorrect code")
         },
         _ => panic!("Incorrect code")
-    };
+    }
 }
