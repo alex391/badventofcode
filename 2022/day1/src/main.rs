@@ -11,10 +11,10 @@ fn main() {
     let mut max_calories: u32 = 0;
     let mut cur_calories: u32 = 0;
     for item in contents.clone() {
-        if item == "" {
+        if item.is_empty() {
             cur_calories = 0;
         } else {
-            cur_calories = cur_calories + item.trim().parse::<u32>().unwrap();
+            cur_calories += item.trim().parse::<u32>().unwrap();
             if cur_calories > max_calories {
                 max_calories = cur_calories;
             }
@@ -27,11 +27,11 @@ fn main() {
     let mut elves: Vec<u32> = Vec::new();
     cur_calories = 0;
     for item in contents {
-        if item == "" {
+        if item.is_empty() {
             elves.push(cur_calories);
             cur_calories = 0;
         } else {
-            cur_calories = cur_calories + item.trim().parse::<u32>().unwrap();
+            cur_calories += item.trim().parse::<u32>().unwrap();
         }
     }
     elves.push(cur_calories); // no newline at the end of the file
