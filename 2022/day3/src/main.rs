@@ -38,10 +38,8 @@ fn find_misplaced(rucksack: [&str; 2]) -> char {
 
 fn find_badge(elves: &[&str]) -> char {
     for c in elves[0].chars() {
-        if elves[1].contains(c){
-            if elves[2].contains(c){
-                return c;
-            }
+        if elves[1].contains(c) && elves[2].contains(c) {
+            return c;
         }
     }
     panic!("Something went wrong finding the letter that was misplaced!");
@@ -54,10 +52,10 @@ fn priority(item: char) -> u32 {
     let upper_offset: u32 = 'A' as u32;
     if item.is_lowercase() {
         let item = item as u32;
-        return (item - lower_offset) + 1;
+        (item - lower_offset) + 1
     } else {
         let item = item as u32;
-        return (item - upper_offset) + 27;
+        (item - upper_offset) + 27
     }
 
 }
