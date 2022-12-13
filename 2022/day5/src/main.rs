@@ -29,20 +29,38 @@ fn main() {
             .collect();
 
         for i in 0..STACK_COUNT {
-            let (_, c) = char_vec[i];
+            let c = char_vec[i].1;
             if c != ' ' {
                 stacks[i].insert(0, c);
             }
         }
     }
-
+    
     // Then, parse the instructions
 
-    let mut instructions: Vec<Vec<u32>> = Vec::new();
-    for line in contents {
-        instructions.push(line.split(' ').filter_map(|string| {
-            string.parse().ok()
-        }).collect());
+    let mut instructions: Vec<Vec<usize>> = Vec::new();
+    for line in contents.skip(1) { // skip the newline
+        instructions.push(line.split(' ')
+            .filter_map(|string| {
+                string.parse().ok()
+            })
+            .collect()
+        );
+    }
+    
+    // Then, do the instructions on the stacks
+
+    for instruction in instructions {
+        for _ in 0..instruction[0] {
+            // pop from instruction[1]
+            // push to instruction[2]
+            // off by 1 - the stacks are 1-indexed
+            let this_crate: char = stacks[instruction[1] - 1].pop().unwrap();
+            stacks[instruction[2] - 1].push(this_crate);
+        }
     }
 
+    for stack in stacks {
+        print!("{}", stack.last().unwrap())
+    }
 }
