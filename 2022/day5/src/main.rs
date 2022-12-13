@@ -51,16 +51,17 @@ fn main() {
     // Then, do the instructions on the stacks
 
     for instruction in instructions {
-        for _ in 0..instruction[0] {
-            // pop from instruction[1]
-            // push to instruction[2]
-            // off by 1 - the stacks are 1-indexed
-            let this_crate: char = stacks[instruction[1] - 1].pop().unwrap();
-            stacks[instruction[2] - 1].push(this_crate);
-        }
+        // pop from instruction[1]
+        // push to instruction[2]
+        // off by 1 - the stacks are 1-indexed
+        let stack = &mut stacks[instruction[1] - 1];
+        let containers: &mut Vec<char> = &mut stack.split_off(stack.len() - instruction[0]);
+
+        stacks[instruction[2] - 1].append(containers);
     }
 
     for stack in stacks {
-        print!("{}", stack.last().unwrap())
+        print!("{}", stack.last().unwrap());
     }
+    println!();
 }
