@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, collections::VecDeque};
 
 fn main() {
     let contents = fs::read_to_string("input.txt")
@@ -8,7 +8,7 @@ fn main() {
     // Parse the input
     const STACK_COUNT: usize = 9; // not worth trying to read this from the file
 
-    let mut stacks: [Vec<char>; STACK_COUNT] = Default::default();
+    let mut stacks: [VecDeque<char>; STACK_COUNT] = Default::default();
     
     // skip the first character in a line, read the next, then skip 4
     // repeat until the number of characters read is equal to STACK_COUNT
@@ -17,7 +17,7 @@ fn main() {
 
     loop {
         let line = contents.next().unwrap();
-        if !line.starts_with('[') {
+        if !line.contains('[') {
             break;
         }
         let char_vec: Vec<(usize, char)> = line.chars()
@@ -31,7 +31,7 @@ fn main() {
         for i in 0..STACK_COUNT {
             let c = char_vec[i].1;
             if c != ' ' {
-                stacks[i].insert(0, c);
+                stacks[i].push_front(c);
             }
         }
     }
@@ -55,13 +55,13 @@ fn main() {
         // push to instruction[2]
         // off by 1 - the stacks are 1-indexed
         let stack = &mut stacks[instruction[1] - 1];
-        let containers: &mut Vec<char> = &mut stack.split_off(stack.len() - instruction[0]);
+        let containers: &mut VecDeque<char> = &mut stack.split_off(stack.len() - instruction[0]);
 
         stacks[instruction[2] - 1].append(containers);
     }
 
-    for stack in stacks {
-        print!("{}", stack.last().unwrap());
+    for mut stack in stacks {
+        print!("{}", stack.pop_front().unwrap());
     }
     println!();
 }
