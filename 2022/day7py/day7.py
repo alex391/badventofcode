@@ -1,6 +1,6 @@
 # I've decided to do day 7 in python first, and come back to do it in rust later
 class File:
-    def __init__(self, name, children, parent, size):
+    def __init__(self, name: str, children: list, parent, size: int):
         self.name = name
         self.children = children
         self.parent = parent
@@ -19,6 +19,25 @@ def find(file: File, name: str) -> File:
             return child
 
 
+def du(directory: File) -> int:
+    """
+    Traverse the tree below a directory, and get the Disk Usage of that directory
+    :param directory: the directory to find traverse
+    :return: the disk usage
+    """
+    size = 0
+    queue = [directory]
+    while len(queue) != 0:
+        n = len(queue)
+        while n > 0:
+            file = queue.pop(0)
+            size += file.size
+            for child in file.children:
+                queue.append(child)
+            n -= 1
+    return size
+
+
 def main():
     contents = open("input.txt").read()
     contents = contents.splitlines()
@@ -26,6 +45,7 @@ def main():
 
     root = File("/", [], None, 0)
     current_dir = root
+    directories = [root]  # A list of all the directories
     # Build the tree:
     for line in contents:
         split = line.split(" ")
@@ -37,11 +57,18 @@ def main():
                 current_dir = find(current_dir, split[2])
         elif line.startswith("dir"):
             # add a new directory
-            current_dir.children.append(File(split[1], [], current_dir, 0))
+            directory = File(split[1], [], current_dir, 0)
+            current_dir.children.append(directory)
+            directories.append(directory)
         elif not line.startswith("$ ls"):
             current_dir.children.append(File(split[1], [], current_dir, int(split[0])))
-    print(len(root.children))
-    print(find(root, "fjf").size)
+        # Just skip '$ ls'
+    sizes = []
+    for directory in directories:
+        sizes.append(du(directory))
+    bytes_sum = sum(filter(lambda x: x <= 100000, sizes))
+    print(bytes_sum)
+
 
 if __name__ == "__main__":
     main()
