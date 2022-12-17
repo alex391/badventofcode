@@ -1,4 +1,4 @@
-# I've decided to do day 7 in python first, and come back to do it in rust later
+# I've decided to just do day 7 in python
 class File:
     def __init__(self, name: str, children: list, parent, size: int):
         self.name = name
@@ -63,11 +63,22 @@ def main():
         elif not line.startswith("$ ls"):
             current_dir.children.append(File(split[1], [], current_dir, int(split[0])))
         # Just skip '$ ls'
-    sizes = []
+    sizes = []  # the sizes of the directories
     for directory in directories:
         sizes.append(du(directory))
     bytes_sum = sum(filter(lambda x: x <= 100000, sizes))
-    print(bytes_sum)
+    print("Part 1:", bytes_sum)
+
+    unused = 70000000 - du(root)
+    need_to_free = 30000000 - unused
+    print("Need to free:", need_to_free)
+
+    # Find the smallest directory that fits
+    sizes.sort()
+    for size in sizes:
+        if size >= need_to_free:
+            print("Part 2:", size)
+            break
 
 
 if __name__ == "__main__":
