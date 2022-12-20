@@ -3,20 +3,11 @@ const ROPE_LENGTH: usize = 10; // 2 for part 1, 10 for part 2
 
 /// Determine if the head and the tail are touching  
 /// Return true if they are, else false  
-/// For example:
-/// ```
-/// let head_position = (5, 2);
-/// let tail_position = (5, 0);
-/// assert_eq!(touching(head_position, tail_position), false);
 fn touching(head_position: (i32, i32), tail_position: (i32, i32)) -> bool {
     // if they are more than one away from each other in either direction
     (head_position.0 - tail_position.0).abs() <= 1 && (head_position.1 - tail_position.1).abs() <= 1
 }
 /// move the tail one closer to the head  
-/// that is,  
-/// ```
-/// tail_position = movement(head_position, tail_position)
-/// ```
 fn movement(head_position: (i32, i32), tail_position: (i32, i32)) -> (i32, i32) {
     let mut tail_vector = (
         head_position.0 - tail_position.0,
