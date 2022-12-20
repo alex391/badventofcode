@@ -1,33 +1,40 @@
 use std::fs;
 
-const CYCLES: usize = 220;
 fn main() {
     let contents = fs::read_to_string("input.txt").expect("Should have been able to read the file");
     let contents = contents.lines();
 
-    let mut signal_strength_sum: i32 = 0;
-
     let mut x: i32 = 1;
     let mut cycle_count = 0;
-    let cool_signal_strengths: Vec<usize> = (20..=CYCLES).step_by(40).collect(); // the signal strengths that the puzzle wants to know about
 
-    'program: for line in contents {
+    const CRT_WIDTH: usize = 40;
+    const CRT_HEIGHT: usize = 6;
+
+    let mut crt: [bool; CRT_WIDTH * CRT_HEIGHT] = [false; CRT_WIDTH * CRT_HEIGHT];
+
+    for line in contents {
         // Increase the count
         let cycles = if line.starts_with("noop") { 1 } else { 2 };
         for _ in 0..cycles {
-            cycle_count += 1;
-            if cool_signal_strengths.contains(&cycle_count) {
-                signal_strength_sum += cycle_count as i32 * x;
-                if cycle_count == CYCLES {
-                    break 'program;
-                }
+            if (cycle_count % CRT_WIDTH) as i32 >= (x - 1)
+                && (cycle_count % CRT_WIDTH) as i32 <= (x + 1)
+            {
+                crt[cycle_count] = true;
             }
+            cycle_count += 1;
         }
         // Actually do the addition, if applicable
         if !line.starts_with("noop") {
-            let mut split = line.split(" ");
+            let mut split = line.split(' ');
             x += split.nth(1).unwrap().parse::<i32>().unwrap();
         }
     }
-    println!("{signal_strength_sum}");
+
+    println!("Part 2:");
+    for pixel in crt.iter().enumerate() {
+        print!("{}", if *pixel.1 { '#' } else { ' ' });
+        if pixel.0 > 0 && (pixel.0 + 1) % CRT_WIDTH == 0 {
+            println!();
+        }
+    }
 }

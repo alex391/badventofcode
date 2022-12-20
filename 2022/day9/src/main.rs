@@ -75,7 +75,6 @@ fn main() {
                 }
             }
             previous_tail_positions.insert(node_positions[ROPE_LENGTH - 1]);
-
         }
         // y movement
         while head_vector.1 != 0 {
@@ -92,7 +91,6 @@ fn main() {
                 }
             }
             previous_tail_positions.insert(node_positions[ROPE_LENGTH - 1]);
-
         }
     }
     println!("Part 2: {}", previous_tail_positions.len())
