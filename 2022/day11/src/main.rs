@@ -37,7 +37,7 @@ impl Monkey {
 }
 
 const MONKEY_COUNT: usize = 8; // Not going to read this from the input
-const ROUNDS: u8 = 20; // The number of rounds to do
+const ROUNDS: u32 = 10000; // The number of rounds to do
 
 fn main() {
     let contents = fs::read_to_string("input.txt").expect("Should have been able to read the file");
@@ -104,6 +104,11 @@ fn main() {
         ));
     }
 
+    let mut divisible_product: u64 = 1;
+    for monkey in &monkeys {
+        divisible_product *= monkey.divisible;
+    }
+
     // Solve the problem:
     let mut inspections: [u64; MONKEY_COUNT] = [0; MONKEY_COUNT];
     for _ in 0..ROUNDS {
@@ -124,8 +129,8 @@ fn main() {
                     }
                     _ => panic!("Incorrect operation!"),
                 }
-                // Get bored:
-                item /= 3;
+                // Make the number more reasonable:
+                item %= divisible_product;
                 // Check divisibility
                 if item % monkeys[i].divisible == 0 {
                     let throw_if_true: usize = monkeys[i].throw_if_true;
@@ -138,5 +143,5 @@ fn main() {
         }
     }
     inspections.sort_unstable_by(|a, b| b.cmp(a));
-    println!("Part 1: {}", inspections[0] * inspections[1]);
+    println!("Part 2: {}", inspections[0] * inspections[1]);
 }
