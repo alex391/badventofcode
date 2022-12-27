@@ -19,7 +19,7 @@ class Graph:
 
 
 def dijkstra(graph: Graph, start_vertex: int):
-    D = {v: float('inf') for v in range(graph.v)}
+    D = [float('inf') for _ in range(graph.v)]
     D[start_vertex] = 0
 
     pq = PriorityQueue()
@@ -60,10 +60,10 @@ def weight(vertex_1: int, vertex_2: int) -> float:
     :param vertex_1: The first vertex - the one we're "standing" on
     :param vertex_2: The second vertex - the one we want to get to without taking out our climbing gear
     :return: inf if you can't go that way, or 1 if you can
-    """ #
+    """  #
     vertex_1_height = heightmap[vertex_to_height(vertex_1)][vertex_1 % width]
     vertex_2_height = heightmap[vertex_to_height(vertex_2)][vertex_2 % width]
-    return float("inf") if vertex_2_height > vertex_1_height + 1 else 1.0
+    return float("inf") if vertex_2_height + 1 < vertex_1_height  else 1.0
 
 
 f = open("input.txt")
@@ -76,16 +76,21 @@ start = 0  # The vertex number for the S and the E
 end = 0
 
 vertex_number = 0
+a_list = []
 for line in enumerate(contents):
     for character in enumerate(line[1]):
         if character[1] == 'S':
             heightmap[line[0]][character[0]] = 0
             start = vertex_number
+            a_list.append(vertex_number)
         elif character[1] == 'E':
             heightmap[line[0]][character[0]] = 25
             end = vertex_number
         else:  # Unicode hack:
-            heightmap[line[0]][character[0]] = (ord(character[1]) - ord('a'))
+            elevation = (ord(character[1]) - ord('a'))
+            heightmap[line[0]][character[0]] = elevation
+            if elevation == 0:
+                a_list.append(vertex_number)
         vertex_number += 1
 
 
@@ -104,8 +109,16 @@ def main():
             if vertex_to_height(vertex) != (height - 1):  # Down:
                 g.add_edge(vertex, vertex + width, weight(vertex, vertex + width))
             vertex += 1
-    D = dijkstra(g, start)
-    print(D.get(end))
+    D = dijkstra(g, end)
+
+    a_distances = D
+    for i in range(0, len(a_distances)):
+        if i not in a_list:
+            a_distances[i] = float("inf")
+            # Just make that distance huge, rather than making mutating the list we're iterating on
+    a_distances.sort()
+
+    print(a_distances[0])
 
 
 if __name__ == "__main__":
