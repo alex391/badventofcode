@@ -16,32 +16,50 @@ class Part():
     def __repr__(self) -> str:
         return self.__str__()
 
+class Gear():
+    def __init__(self, coordinate: (int, int), ratio: int):
+        self.coordinate = coordinate
+        self.ratio = ratio
+
+    def __hash__(self) -> int:
+        return hash(self.coordinate)
+    
+    def __eq__(self, other):
+        return self.coordinate == other.coordinate
+    
 def main():
     engine = []
     with open("input.txt") as file:
         for line in file:
             engine.append(list(line.strip()))
 
-    parts = set()
+    gears = set()
     for y, row in enumerate(engine):
         for x, column in enumerate(row):
-            if column != '.' and not column.isdecimal():
-                # Then it's a symbol
+            if column == '*':
+                # Then it's a gear
                 # check if there are numbers around it
-                for part in check_for_numbers(engine, x, y):
-                    parts.add(part)
+                parts = set(check_for_numbers(engine, x, y))
+                if len(parts) == 2:
+                    product = 1
+                    for part in parts:
+                        product *= part.part_number
+                    gears.add(Gear((x, y), product))
 
-    visualization = engine
+
+    # visualization = engine
+    # for part in parts:
+        # for i in range(number_length(part.part_number)):
+        #     visualization[part.coordinate[1]][part.coordinate[0] + i] = "X"
+    
     sum = 0
-    for part in parts:
-        for i in range(number_length(part.part_number)):
-            visualization[part.coordinate[1]][part.coordinate[0] + i] = "X"
-        sum += part.part_number
+    for gear in gears:
+        sum += gear.ratio
 
-    for y in visualization:
-        for x in y:
-            print(x, end="")
-    print()
+    # for y in visualization:
+    #     for x in y:
+    #         print(x, end="")
+    # print()
     print(sum)
 
 def check_for_numbers(engine: list, x: int, y: int) -> list:
