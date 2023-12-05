@@ -1,3 +1,7 @@
+# OK, I acknowledge that this is a silly solution... keeping track of the count for each Scratchcard
+# would hve been enough
+# Runs *a lot* faster in pypy3
+
 class Scratchcard():
     score_cache = None
     def __init__(self, card_number: int, winning: set, have: list):
