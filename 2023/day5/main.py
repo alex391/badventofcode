@@ -1,3 +1,6 @@
+# Another dumb solution: brute force! (read: repo name)
+
+from multiprocessing import Pool as ThreadPool
 class AlmanacMap():
     def __init__(self, to_parse: str):
         self.destination, self.source, self.length = [int(x) for x in to_parse.split()]
@@ -9,14 +12,13 @@ class AlmanacMap():
         if input in range(self.source, self.source + self.length):
             return input + self.destination - self.source, True
         return input, False
-    
 
-
-
+almanac = [] # list of list of AlmanacMaps
 def main(): 
     with open("input.txt") as file:
-        seeds = list(map(int, next(file).split()[1:]))
-        almanac = [] # list of list of AlmanacMaps
+        seeds = map(int, next(file).split()[1:])
+        # Take seeds (iterable containing [1, 2, 3, 4]) and convert to ranges ([range(1, 3), range(3, 7)])
+        seed_ranges = list(map(lambda x: range(x[0], x[0] + x[1]), zip(*(seeds,) * 2))) # Thanks https://stackoverflow.com/a/1625023 by https://stackoverflow.com/users/97828/nadia-alramli
         current_map = []
         for line in file:
             line = line.strip()
@@ -29,17 +31,24 @@ def main():
                 current_map = []
         almanac.append(current_map)
 
-    for almanac_maps in almanac:
-        matched = [False for _ in seeds]
-        for almanac_map in almanac_maps:
-            print(seeds)
-            print(almanac_map)
-            for i, seed in enumerate(seeds):
-                if (matched[i]):
-                   continue
-                seeds[i], matched[i] = almanac_map.map_seed(seed)
+    # CPU go brrr
+    pool = ThreadPool(len(seed_ranges)) # Thanks https://stackoverflow.com/a/28463266 by https://stackoverflow.com/users/2327328/philshem
+    lowest_location_numbers = pool.map(lowest_location_in_seed_range, seed_ranges)
 
-    print(min(seeds))
+    print(min(lowest_location_numbers))
+
+def lowest_location_in_seed_range(seed_range: list) -> int:
+    lowest_location_number = float("inf")
+    for seed in seed_range:
+            for almanac_maps in almanac:
+                for almanac_map in almanac_maps:
+                    seed, matched = almanac_map.map_seed(seed)
+                    if matched:
+                        break
+            lowest_location_number = seed if seed < lowest_location_number else lowest_location_number
+    return lowest_location_number
+
+
 
 if __name__ == "__main__":
     main()
