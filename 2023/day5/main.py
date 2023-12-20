@@ -37,7 +37,7 @@ def main():
 
     print(min(lowest_location_numbers))
 
-def lowest_location_in_seed_range(seed_range: list) -> int:
+def lowest_location_in_seed_range(seed_range: range) -> int:
     lowest_location_number = float("inf")
     for seed in seed_range:
             for almanac_maps in almanac:
