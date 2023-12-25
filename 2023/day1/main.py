@@ -1,7 +1,10 @@
 import sys
 import operator
-NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+NUMBER_WORDS = ["zero", "one", "two", "three",
+                "four", "five", "six", "seven", "eight", "nine"]
 WORDS_AND_NUMBERS = NUMBER_WORDS + [str(n) for n in range(1, 10)]
+
+
 def main():
     sum = 0
     with open("input.txt") as input:
@@ -32,11 +35,10 @@ def get_calibration_number(string: str, first: bool) -> int:
         except ValueError:
             continue
     if min_or_max_index == -1 or min_or_max_index == sys.maxsize:
-        raise ValueError(f'The string: "{string}" does not contain any numbers.')
+        raise ValueError(
+            f'The string: "{string}" does not contain any numbers.')
     return value
 
- 
-                    
 
 if __name__ == "__main__":
     main()

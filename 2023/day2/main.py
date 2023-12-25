@@ -3,12 +3,13 @@ class Hand():
         self.red = colors["red"] if "red" in colors else 0
         self.green = colors["green"] if "green" in colors else 0
         self.blue = colors["blue"] if "blue" in colors else 0
-    
+
     def __repr__(self) -> str:
         return f"red: {self.red}, green: {self.green}, blue: {self.blue}"
-    
+
     def power(self) -> int:
         return self.red * self.green * self.blue
+
 
 def main():
     sum = 0
@@ -20,12 +21,14 @@ def main():
             game = []
             for string in hand_strings:
                 cubes = [cube.strip() for cube in string.split(",")]
-                counts_and_colors = {color: int(count) for count, color in [cube.split() for cube in cubes]}
+                counts_and_colors = {color: int(count) for count, color in [
+                    cube.split() for cube in cubes]}
                 hand = Hand(counts_and_colors)
                 game.append(hand)
             fewest_cubes = min_hand(game)
             sum += fewest_cubes.power()
     print(sum)
+
 
 def min_hand(hands: list) -> Hand:
     return Hand({
@@ -33,7 +36,6 @@ def min_hand(hands: list) -> Hand:
         "green": max([hand.green for hand in hands]),
         "blue": max([hand.blue for hand in hands])
     })
-    
 
 
 if __name__ == "__main__":
