@@ -40,12 +40,12 @@ def main():
 def lowest_location_in_seed_range(seed_range: range) -> int:
     lowest_location_number = float("inf")
     for seed in seed_range:
-            for almanac_maps in almanac:
-                for almanac_map in almanac_maps:
-                    seed, matched = almanac_map.map_seed(seed)
-                    if matched:
-                        break
-            lowest_location_number = seed if seed < lowest_location_number else lowest_location_number
+        for almanac_maps in almanac:
+            for almanac_map in almanac_maps:
+                seed, matched = almanac_map.map_seed(seed)
+                if matched:
+                    break
+        lowest_location_number = seed if seed < lowest_location_number else lowest_location_number
     return lowest_location_number
 
 
