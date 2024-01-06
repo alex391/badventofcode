@@ -15,16 +15,24 @@ class HandType(Enum):
         return self.value < other.value
 
 
-CARD_VALUES = dict([(item[1], item[0]) for item in enumerate(['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'])]) # Dictionary from card to it's value
+# Dictionary from card to it's value:
+CARD_VALUES = dict([(item[1], item[0]) for item in enumerate(
+    ['J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'])])
+
+
 class Hand():
-    
+
     _hand_type = None
 
     @property
     def hand_type(self) -> HandType:
-        if self._hand_type != None:
+        if self._hand_type is not None:
             return self._hand_type
-        card_counts = list(Counter(self.hand).values())
+        hand_counter = Counter(self.hand)
+        most_common_card = next((x[0] for x in hand_counter.most_common(
+        ) if x[0] != 'J'), 'J')  # If they're all J, then just use J
+        j_hand = [most_common_card if c == 'J' else c for c in self.hand]
+        card_counts = list(Counter(j_hand).values())
         card_counts.sort()
         card_counts = card_counts[::-1]
         card_counts_max = card_counts[0]
@@ -46,10 +54,11 @@ class Hand():
             case 1:
                 self._hand_type = HandType.HIGH_CARD
             case _:
-                print(f"Shouldn't be possible for card_counts_max to be {card_counts_max}")
+                print(
+                    "Shouldn't be possible for "
+                    f"card_counts_max to be {card_counts_max}")
                 exit()
         return self._hand_type
-    
 
     def __init__(self, hand: str, bid: str):
         self.hand = str.strip(hand)
@@ -57,22 +66,23 @@ class Hand():
 
     def __repr__(self) -> str:
         return f"{self.hand} {self.bid} {self.hand_type}"
-    
+
     def _hand_strength_lt(self, other) -> bool:
         for item in zip(self.hand, other.hand):
             if CARD_VALUES[item[0]] < CARD_VALUES[item[1]]:
                 return True
             elif CARD_VALUES[item[0]] > CARD_VALUES[item[1]]:
                 return False
-        print("Something's gone wrong with _hand_strength_lt") # Should never be equal? Might be better to return False
+        # Should never be equal? Might be better to return False
+        print("Something's gone wrong with _hand_strength_lt")
         exit()
-    
+
     def __lt__(self, other) -> bool:
         if self.hand_type != other.hand_type:
             return self.hand_type < other.hand_type
         else:
             return self._hand_strength_lt(other)
-            
+
 
 def main():
     hands = []
@@ -82,17 +92,20 @@ def main():
 
     hands.sort()
 
-    for hand in hands:
-        print(hand)
+    # for hand in hands:
+    #     print(hand)
 
     sum = 0
     rank = 1
     i = 0
-    while i < len(hands): # Not very pythonic, but my brain hurts trying to think about enumerate here
+    # Not very pythonic, but my brain hurts trying to think about enumerate
+    # here:
+    while i < len(hands):
         sum += hands[i].bid * rank
         i += 1
         rank += 1
     print(sum)
+
 
 if __name__ == "__main__":
     main()
