@@ -29,29 +29,41 @@ fn main() {
     
 
     let mut current_key: String = "AAA".to_string();
-    let mut current_value: &(String, String) = maps.get(&current_key).unwrap_or_else(|| panic!("{current_key} not in maps"));
+    let mut current_value: (String, String) = maps.get(&current_key).unwrap_or_else(|| panic!("{current_key} not in maps")).clone();
     let mut count = 0;
     'outer: loop {
         for c in &directions {
-            match c {
-                'L' => {
-                    current_key = current_value.0.to_string();
+            let value = follow_map(c, &mut current_key, current_value, &mut count, &maps);
+            match value {
+                None => {
+                    break 'outer;
                 }
-                'R' => {
-                    current_key = current_value.1.to_string();
-                }
-                _ => {
-                    panic!("Invalid direction");
+                Some(value) => {
+                    current_value = value;
                 }
             }
-            count += 1;
-            if current_key == "ZZZ" {
-                break 'outer;
-            }
-            current_value = maps.get(&current_key).unwrap_or_else(|| panic!("{current_key} not in maps"));
         }
     }
 
     println!("{count}");
 }
 
+fn follow_map(c: &char, current_key: &mut String, current_value: (String, String), count: &mut i32, maps: & HashMap<String, (String, String)>) -> Option<(String, String)> {
+    match c {
+        'L' => {
+            *current_key = current_value.0.to_string();
+        }
+        'R' => {
+            *current_key = current_value.1.to_string();
+        }
+        _ => {
+            panic!("Invalid direction");
+        }
+    }
+    *count += 1;
+    if *current_key == "ZZZ" {
+        return None;
+    }
+    let current_value = maps.get(current_key).unwrap_or_else(|| panic!("{} not in maps", current_key));
+    Some(current_value.clone())
+}
