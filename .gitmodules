@@ -1,0 +1,3 @@
+[submodule "2023/day10/lib/arena"]
+	path = 2023/day10/lib/arena
+	url = https://github.com/tsoding/arena.git
