@@ -201,6 +201,71 @@ uint32_t steps_to_furthest(size_t start_x, size_t start_y,
 	return count / 2;
 }
 
+uint32_t count_inside(size_t start_x, size_t start_y, struct pipe_t *start_pipe,
+		      char grid[][MAX_COLUMNS], size_t grid_height,
+		      size_t grid_width)
+{
+	// I recently watched this video on rendering fonts
+	// https://youtu.be/SO83KQuuZvg
+	// This is basically the same problem as that, but simpler
+	char on_loop[MAX_ROWS][MAX_COLUMNS] = {
+		0
+	}; // The grid, but only the connected pipes
+	size_t position_x = start_x;
+	size_t position_y = start_y;
+	struct pipe_t *current_pipe = start_pipe;
+	int direction =
+		current_pipe->connections[0]; // Just pick a diection to go first
+	do {
+		switch (direction) {
+		// I'm assuming the problem is nice enough to not put us out of bounds.
+		case NORTH:
+			position_y--;
+			break;
+		case SOUTH:
+			position_y++; // South is actually positive y
+			break;
+		case EAST:
+			position_x++;
+			break;
+		case WEST:
+			position_x--;
+			break;
+		default:
+			// And you may ask yourself, "Well, how did I get here?"
+			fprintf(stderr, "Bad direction %d\n", direction);
+			exit(2);
+		}
+		on_loop[position_y][position_x] = grid[position_y][position_x];
+		current_pipe = lookup_pipe(grid[position_y][position_x]);
+		// change the direction to the direction that woudn't cause us to just go backwards
+		if (current_pipe->connections[0] != (direction + 2) % 4) {
+			direction = current_pipe->connections[0];
+		} else {
+			direction = current_pipe->connections[1];
+		}
+
+	} while (position_x != start_x || position_y != start_y);
+
+	uint32_t inside_count = 0;
+	for (size_t y = 0; y < grid_height; y++) {
+		for (size_t x = 0; x < grid_width; x++) {
+			if (on_loop[y][x] == 0) {
+				uint32_t crosses = 0;
+				for (size_t ray_x = x + 1; ray_x < grid_width;
+				     ray_x++) {
+					if (on_loop[y][ray_x] != 0 && on_loop[y][ray_x] != '-') {
+						crosses++;
+					}
+				}
+				if (crosses % 2 != 0) {
+					inside_count++;
+				}
+			}
+		}
+	}
+	return inside_count;
+}
 int main()
 {
 	FILE *fp;
@@ -209,7 +274,7 @@ int main()
 		fprintf(stderr, "Couldn't open the file!");
 		return 1;
 	}
-	char grid[MAX_ROWS][MAX_COLUMNS];
+	char grid[MAX_ROWS][MAX_COLUMNS] = { 0 };
 	int c;
 	size_t row = 0;
 	size_t column = 0;
@@ -241,5 +306,9 @@ int main()
 
 	uint32_t steps = steps_to_furthest(start_x, start_y, start_pipe, grid,
 					   row, max_column);
+	uint32_t inside = count_inside(start_x, start_y, start_pipe, grid, row,
+				       max_column);
+	arena_free(&scratch);
 	printf("steps: %u\n", steps);
+	printf("inside: %u\n", inside);
 }
