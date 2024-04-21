@@ -18,11 +18,11 @@ struct pipe_t_slice {
 };
 
 enum direction {
-	NORTH = 0,
-	EAST = 1,
-	SOUTH = 2,
-	WEST = 3,
-	NONE = 4,
+	NORTH,
+	EAST,
+	SOUTH,
+	WEST,
+	NONE,
 };
 
 struct pipe_t_slice *filter_pipes(const struct pipe_t *pipes, size_t size,
@@ -50,8 +50,9 @@ struct pipe_t *lookup_pipe(char pipe_name)
 }
 
 // Find out which pipe the start is
-struct pipe_t *start_type(size_t start_x, size_t start_y, char grid[][MAX_COLUMNS],
-			  size_t grid_height, size_t grid_width, Arena *b)
+struct pipe_t *start_type(size_t start_x, size_t start_y,
+			  char grid[][MAX_COLUMNS], size_t grid_height,
+			  size_t grid_width, Arena *b)
 {
 	Arena a = { 0 };
 	size_t connections_index = 0;
@@ -66,7 +67,8 @@ struct pipe_t *start_type(size_t start_x, size_t start_y, char grid[][MAX_COLUMN
 	// Is one of the south-facing pipes connected?
 	if (start_y >= 1) {
 		struct pipe_t_slice *south_pipes = filter_pipes(
-			pipe_types, sizeof(pipe_types) / sizeof(struct pipe_t), SOUTH, &a);
+			pipe_types, sizeof(pipe_types) / sizeof(struct pipe_t),
+			SOUTH, &a);
 		char up_pipe_name = grid[start_y - 1][start_x];
 		struct pipe_t *up_pipe = lookup_pipe(up_pipe_name);
 		// check if up_pipe is in south_pipes, and add it to the start
@@ -87,7 +89,7 @@ struct pipe_t *start_type(size_t start_x, size_t start_y, char grid[][MAX_COLUMN
 			start->connections[connections_index++] = SOUTH;
 		}
 	}
-	
+
 	// East
 	if (start_x + 1 < grid_width) {
 		struct pipe_t_slice *pipes = filter_pipes(
@@ -155,6 +157,50 @@ struct pipe_t_slice *filter_pipes(const struct pipe_t *pipes, size_t size,
 	return filtered;
 }
 
+uint32_t steps_to_furthest(size_t start_x, size_t start_y,
+			   struct pipe_t *start_pipe, char grid[][MAX_COLUMNS],
+			   size_t grid_height, size_t grid_width)
+{
+	size_t position_x = start_x;
+	size_t position_y = start_y;
+	struct pipe_t *current_pipe = start_pipe;
+	int direction =
+		current_pipe->connections[0]; // Just pick a diection to go first
+	uint32_t count = 0;
+	do {
+		switch (direction) {
+		// I'm assuming the problem is nice enough to not put us out of bounds.
+		case NORTH:
+			position_y--;
+			break;
+		case SOUTH:
+			position_y++; // South is actually positive y
+			break;
+		case EAST:
+			position_x++;
+			break;
+		case WEST:
+			position_x--;
+			break;
+		default:
+			// And you may ask yourself, "Well, how did I get here?"
+			fprintf(stderr, "Bad direction %d\n", direction);
+			exit(2);
+		}
+		count++;
+		current_pipe = lookup_pipe(grid[position_y][position_x]);
+		// change the direction to the direction that woudn't cause us to just go backwards
+		if (current_pipe->connections[0] != (direction + 2) % 4) {
+			direction = current_pipe->connections[0];
+		} else {
+			direction = current_pipe->connections[1];
+		}
+
+	} while (position_x != start_x || position_y != start_y);
+
+	return count / 2;
+}
+
 int main()
 {
 	FILE *fp;
@@ -170,15 +216,6 @@ int main()
 	size_t max_column = 0; // Because \nEOF resets column, store the max
 	size_t start_x, start_y;
 	while ((c = getc(fp)) != EOF) {
-		if (c == '\n') {
-			if (column > max_column) {
-				max_column = column;
-			}
-			column = 0;
-			row++;
-		} else {
-			column++;
-		}
 		if (c == 'S') {
 			start_x = column;
 			start_y = row;
@@ -188,10 +225,21 @@ int main()
 			return 1;
 		}
 		grid[row][column] = c;
+		if (c == '\n') {
+			if (column > max_column) {
+				max_column = column;
+			}
+			column = 0;
+			row++;
+		} else {
+			column++;
+		}
 	}
 	Arena scratch = { 0 };
-	struct pipe_t *start_pipe = start_type(start_x, start_y, grid, row, max_column, &scratch);
-	printf("%c\n", start_pipe->name);
-	printf("%d\n", start_pipe->connections[0]);
-	printf("%d\n", start_pipe->connections[1]);
+	struct pipe_t *start_pipe =
+		start_type(start_x, start_y, grid, row, max_column, &scratch);
+
+	uint32_t steps = steps_to_furthest(start_x, start_y, start_pipe, grid,
+					   row, max_column);
+	printf("steps: %u\n", steps);
 }
