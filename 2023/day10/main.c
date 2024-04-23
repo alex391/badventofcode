@@ -330,7 +330,7 @@ int main()
 	FILE *fp;
 	fp = fopen("input.txt", "r");
 	if (fp == NULL) {
-		fprintf(stderr, "Couldn't open the file!");
+		fprintf(stderr, "Couldn't open the file!\n");
 		return 1;
 	}
 	char grid[MAX_ROWS][MAX_COLUMNS] = { 0 };
@@ -358,6 +358,10 @@ int main()
 		} else {
 			column++;
 		}
+	}
+	if (fclose(fp) == EOF) {
+		fprintf(stderr, "File close error!");
+		return 4;
 	}
 	Arena scratch = { 0 };
 	struct pipe_t *start_pipe =
