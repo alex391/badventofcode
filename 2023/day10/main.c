@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define MAX_ROWS 150
 #define MAX_COLUMNS 150
@@ -28,6 +29,8 @@ enum direction {
 struct pipe_t_slice *filter_pipes(const struct pipe_t *pipes, size_t size,
 				  int direction, Arena *a);
 bool pipe_t_in(struct pipe_t *needle, struct pipe_t_slice *haystack);
+bool two_int_array_equal(const int *a, const int *b);
+void two_sort(int *arr);
 const struct pipe_t pipe_types[] = {
 	{ '|', { NORTH, SOUTH } }, { '-', { EAST, WEST } },
 	{ 'L', { NORTH, EAST } },  { 'J', { NORTH, WEST } },
@@ -201,6 +204,42 @@ uint32_t steps_to_furthest(size_t start_x, size_t start_y,
 	return count / 2;
 }
 
+// Figure out what letter represents the start
+char start_name(struct pipe_t *start_pipe)
+{
+	for (size_t i = 0; i < (sizeof(pipe_types) / sizeof(struct pipe_t)); i++) {
+		if (two_int_array_equal(start_pipe->connections, pipe_types[i].connections)) {
+			return pipe_types[i].name;
+		}
+	}
+	fprintf(stderr, "Bad start pipe\n");
+	exit(3);
+	return '\0';
+}
+
+// Check if two arrays contain the same elements.
+// they should both be 2 in length 
+bool two_int_array_equal(const int *a, const int *b)
+{
+	int temp_a[2] = { 0 };
+	int temp_b[2] = { 0 };
+	memcpy(temp_a, a, sizeof(temp_a));
+	memcpy(temp_b, b, sizeof(temp_a));
+	two_sort(temp_a);
+	two_sort(temp_b);
+	return temp_a[0] == temp_b[0] && temp_a[1] == temp_b[1];
+}
+
+// sort int array of size 2 in descending order (in place)
+void two_sort(int *arr)
+{
+	if (arr[1] > arr[0]) {
+		int temp = arr[0];
+		arr[0] = arr[1];
+		arr[1] = temp;
+	}
+
+}
 uint32_t count_inside(size_t start_x, size_t start_y, struct pipe_t *start_pipe,
 		      char grid[][MAX_COLUMNS], size_t grid_height,
 		      size_t grid_width)
@@ -236,7 +275,7 @@ uint32_t count_inside(size_t start_x, size_t start_y, struct pipe_t *start_pipe,
 			fprintf(stderr, "Bad direction %d\n", direction);
 			exit(2);
 		}
-		on_loop[position_y][position_x] = grid[position_y][position_x];
+		on_loop[position_y][position_x] = grid[position_y][position_x] == 'S' ? start_name(start_pipe) : grid[position_y][position_x];
 		current_pipe = lookup_pipe(grid[position_y][position_x]);
 		// change the direction to the direction that woudn't cause us to just go backwards
 		if (current_pipe->connections[0] != (direction + 2) % 4) {
@@ -248,24 +287,44 @@ uint32_t count_inside(size_t start_x, size_t start_y, struct pipe_t *start_pipe,
 	} while (position_x != start_x || position_y != start_y);
 
 	uint32_t inside_count = 0;
+	const int can_hit[] = {'F', 'J', '|', '-'};
 	for (size_t y = 0; y < grid_height; y++) {
 		for (size_t x = 0; x < grid_width; x++) {
-			if (on_loop[y][x] == 0) {
+			if (!on_loop[y][x]) {
 				uint32_t crosses = 0;
-				for (size_t ray_x = x + 1; ray_x < grid_width;
-				     ray_x++) {
-					if (on_loop[y][ray_x] != 0 && on_loop[y][ray_x] != '-') {
+				// We run into dashes and corners head on if we
+				// go straight right so just go diagonally to
+				// hit them at an angle (so we cross them once,
+				// and not over and over). Becuse the beam is
+				// going diagonaly, it can only hit F, J, | and
+				// -. 7 and L are only glancing hits - they
+				// don't count.
+				for (size_t ray_distance = 0; (x + ray_distance < grid_width) && (y + ray_distance < grid_height);
+				     ray_distance++) {
+					if (int_in(on_loop[y + ray_distance][x + ray_distance], can_hit, sizeof(can_hit) / sizeof(int))) {
 						crosses++;
 					}
 				}
 				if (crosses % 2 != 0) {
 					inside_count++;
+					on_loop[y][x] = 'I';
+				}
+				else {
+					on_loop[y][x] = 'O';
 				}
 			}
 		}
 	}
+	for (size_t i = 0; i < grid_height; i++) {
+		for (size_t j = 0; j < grid_width; j++) {
+			printf("%c", on_loop[i][j] ? on_loop[i][j] : '.');
+		}
+		printf("\n");
+	}
+	printf("\n");
 	return inside_count;
 }
+
 int main()
 {
 	FILE *fp;
