@@ -6,9 +6,9 @@ def part_one():
     right = []
     with open("input.txt", "r") as f:
         for line in f:
-            slplit = line.split("   ")
-            left.append(int(slplit[0]))
-            right.append(int(slplit[1]))
+            split = line.split("   ")
+            left.append(int(split[0]))
+            right.append(int(split[1]))
     left.sort()
     right.sort()
 
@@ -24,9 +24,9 @@ def part_two():
     right = []
     with open("input.txt", "r") as f:
         for line in f:
-            slplit = line.split("   ")
-            left.append(int(slplit[0]))
-            right.append(int(slplit[1]))
+            split = line.split("   ")
+            left.append(int(split[0]))
+            right.append(int(split[1]))
 
     similarity_score = 0
     right_counter = Counter(right)
