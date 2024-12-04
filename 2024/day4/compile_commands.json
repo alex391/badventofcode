@@ -1,0 +1,14 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-o",
+      "main",
+      "main.c"
+    ],
+    "directory": "/home/alex/git/badventofcode/2024/day4",
+    "file": "/home/alex/git/badventofcode/2024/day4/main.c",
+    "output": "/home/alex/git/badventofcode/2024/day4/main"
+  }
+]
