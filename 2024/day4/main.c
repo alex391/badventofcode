@@ -35,16 +35,17 @@ int check_x(size_t search_x, size_t search_y, char word_search[HEIGHT][WIDTH + 1
 			// Check if that's the letter in MAS that we're expecting
 			// If it isn't, then skip adding one to matches
 			ptrdiff_t x = offset[0] + search_x;
-			if (x > WIDTH || x < 0) {
+			if (x >= WIDTH || x < 0) {
 				goto skip_add;
 			}
 
 			ptrdiff_t y = offset[1] + search_y;
-			if (y > HEIGHT || y < 0) {
+			if (y >= HEIGHT || y < 0) {
 				goto skip_add;
 			}
+
 			printf("\tOffset: %d, %d\n", offset[0], offset[1]);
-			printf("\tChecking %td, %td, direction %zu\n", x, y, j);
+			printf("\tChecking %td, %td, direction %zu: %c, mas: %c\n", x, y, j, word_search[y][x], mas[i]);
 			
 			if(word_search[y][x] != mas[i]) {
 				goto skip_add;
@@ -79,7 +80,7 @@ int main()
 	char word_search[HEIGHT][WIDTH + 1] = { 0 };		
 	FILE *f = fopen("input.txt", "r");
 	if (f == NULL) {
-		fprintf(stderr, "Can't open input.txt!");
+		fprintf(stderr, "Can't open input.txt!\n");
 		return 1;
 	}
 	int c = 0;
@@ -89,6 +90,7 @@ int main()
 		if (c == '\n') {
 			 y++;
 			 x = 0;
+			 continue;
 		}
 		word_search[y][x] = c;
 		x++;
