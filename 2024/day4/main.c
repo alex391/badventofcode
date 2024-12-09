@@ -40,7 +40,7 @@ int check_x(size_t search_x, size_t search_y, char word_search[HEIGHT][WIDTH + 1
 				goto skip_add;
 			}
 			
-			if(word_search[y][x] == mas[i]) {
+			if(word_search[y][x] != mas[i]) {
 				goto skip_add;
 			}
 			
