@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define WIDTH 10
-#define HEIGHT 10
+#define WIDTH 140
+#define HEIGHT 140
 
 int check_x(size_t search_x, size_t search_y, char word_search[HEIGHT][WIDTH + 1])
 {
@@ -60,21 +60,101 @@ skip_add:
 	return matches;
 }
 
+bool check_a(size_t search_x, size_t search_y, char word_search[HEIGHT][WIDTH + 1])
+{
+	// top left and bottom right must have an M and S
+	// bottom right and top left must have and M and S
+	
+	const int nw_lookup[2][2] = {
+		{ -1, -1 },
+		{ 1, 1 }
+	};
+
+	const int se_lookup[2][2] = {
+		{ 1, -1 },
+		{ -1, 1 }
+	};
+
+	bool nw_m = false;
+	bool nw_s = false;
+
+	bool se_m = false;
+	bool se_s = false;
+
+	for(size_t i = 0; i < 2; i++) {
+		ptrdiff_t x = nw_lookup[i][0] + search_x;
+		if (x < 0 || x >= WIDTH) {
+			return false;	
+		}
+
+		ptrdiff_t y = nw_lookup[i][1] + search_y;
+		if (y < 0 || y >= HEIGHT) {
+			return false;	
+		}
+
+		if (word_search[y][x] == 'M') {
+			nw_m = true;
+		}
+
+		if (word_search[y][x] == 'S') {
+			nw_s = true;
+		}
+	}
+
+	for(size_t i = 0; i < 2; i++) {
+		ptrdiff_t x = se_lookup[i][0] + search_x;
+		if (x < 0 || x >= WIDTH) {
+			return false;	
+		}
+
+		ptrdiff_t y = se_lookup[i][1] + search_y;
+		if (y < 0 || y >= HEIGHT) {
+			return false;	
+		}
+
+		if (word_search[y][x] == 'M') {
+			se_m = true;
+		}
+
+		if (word_search[y][x] == 'S') {
+			se_s = true;
+		}
+	}
+	if (nw_m && nw_s && se_m && se_s) {
+		printf("Match at %zu, %zu\n", search_x, search_y);
+		return true;
+	}
+	return false;
+}
+
 void part_one(char word_search[HEIGHT][WIDTH + 1])
 {
 	int count = 0;
 	for (size_t y = 0; y < HEIGHT; y++) {
 		for (size_t x = 0; x < WIDTH; x++) {
-			// TODO: Only for Xs
 			if (word_search[y][x] == 'X') {
 				count += check_x(x, y, word_search);
 			}
 		}
 	}
 	printf("%d\n", count);
-
-
 }
+
+void part_two(char word_search[HEIGHT][WIDTH + 1])
+{
+	int count = 0;
+	for (size_t y = 0; y < HEIGHT; y++) {
+		for (size_t x = 0; x < WIDTH; x++) {
+			if (word_search[y][x] == 'A') {
+				if (check_a(x, y, word_search)) {
+					count++;
+				}
+			}
+		}
+	}
+	printf("%d\n", count);
+}
+
 int main()
 {
 	char word_search[HEIGHT][WIDTH + 1] = { 0 };		
@@ -96,5 +176,6 @@ int main()
 		x++;
 	}
 	fclose(f);
-	part_one(word_search);
+	// part_one(word_search);
+	part_two(word_search);
 }
