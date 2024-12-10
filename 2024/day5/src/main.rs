@@ -1,4 +1,4 @@
-use std::{fs, num::ParseIntError, str::FromStr};
+use std::{fmt::Display, fs, num::ParseIntError, str::FromStr};
 
 struct PageOrder {
     before: i32,
@@ -23,6 +23,12 @@ impl FromStr for PageOrder {
         };
 
         Ok(PageOrder {before, after})
+    }
+}
+
+impl Display for PageOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}|{}", self.before, self.after)
     }
 }
 
