@@ -36,4 +36,33 @@ fn main() {
     let contents = fs::read_to_string("input.txt").expect("Should have been able to read the file");
     let mut contents = contents.lines();
 
+    let mut page_orders: Vec<PageOrder> = Vec::new();
+
+    loop {
+        let line = contents.next();
+        let line = match line {
+            Some(line) => line,
+            None => break,
+        };
+        if line.is_empty() {
+            break; // Done with PageOrders
+        }
+        page_orders.push(line.parse().unwrap());
+
+    }
+
+    let mut updates: Vec<Vec<i32>> = Vec::new();
+
+    for line in contents {
+        let update: Vec<i32> = line.split(',').map(|x| {x.parse().unwrap()}).collect();
+        updates.push(update);
+    }
+    
+    for page_order in page_orders {
+        println!("{page_order}")
+    }
+    println!();
+    for update in updates {
+        println!("{:?}", update)
+    }
 }
