@@ -78,7 +78,7 @@ fn main() {
     for mut update in updates {
         let old_update = update.clone();
         update.sort_unstable_by(|a, b| page_order_cmp(*a, *b, &page_orders));
-        if old_update == update {
+        if old_update != update {
             let middle_index = update.len() / 2;
             sum += update[middle_index];
         }
