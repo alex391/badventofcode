@@ -71,6 +71,7 @@ fn main() {
 
     let mut guard = Point::new();
 
+
     'outer: for (y, line) in map.iter().enumerate() {
         for (x, char) in line.iter().enumerate() {
             if *char == '^' {
@@ -80,33 +81,58 @@ fn main() {
             }
         }
     }
-
+    let start = guard;
     map[guard.y][guard.x] = '.';
 
-    let mut visited: HashSet<Point> = HashSet::new();
+    let mut obstruction_positions = 0;
 
-    let mut direction: Directions = Directions::Up;
-    while let Some(to_look) = direction.look_offset().add(&guard) {
-        let is_obstacle: bool = match match map.get(to_look.y) {
-            Some(row) => row,
-            None => break,
-        }
-        .get(to_look.x)
-        {
-            Some(c) => match c {
-                '#' => true,
-                '.' => false,
-                _ => unreachable!(),
-            },
-            None => break,
-        };
-        if is_obstacle {
-            direction.turn();
-        } else {
-            guard = to_look;
-            visited.insert(to_look);
+    let loops_threshold = 10000; // This is dumb! But it works...(does it?)
+
+    // Index for loop to avoid having both &mut and &
+    for y in 0..map.len(){
+        for x in 0..map[y].len() {
+            if (Point {x, y}) == start {
+                continue;
+            }
+            if map[y][x] == '#' {
+                continue;
+            }
+            map[y][x] = '#';
+            let mut visited: HashSet<Point> = HashSet::new();
+
+            let mut direction: Directions = Directions::Up;
+            let mut loops_count = 0;
+            while let Some(to_look) = direction.look_offset().add(&guard) {
+                let is_obstacle: bool = match match map.get(to_look.y) {
+                    Some(row) => row,
+                    None => break,
+                }
+                .get(to_look.x)
+                {
+                    Some(c) => match c {
+                        '#' => true,
+                        '.' => false,
+                        _ => unreachable!(),
+                    },
+                    None => break,
+                };
+                if is_obstacle {
+                    direction.turn();
+                } else {
+                    guard = to_look;
+                    visited.insert(to_look);
+                }
+                loops_count += 1;
+                if loops_count > loops_threshold {
+                    obstruction_positions += 1;
+                    break;
+                }
+            }
+
+            map[y][x] = '.';
         }
     }
 
-    println!("{}", visited.len())
+    
+    println!("{}", obstruction_positions)
 }
