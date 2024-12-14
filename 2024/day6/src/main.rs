@@ -1,3 +1,4 @@
+// This is very brute force... run with `cargo run --release`
 use std::{collections::HashSet, fs};
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -86,7 +87,7 @@ fn main() {
 
     let mut obstruction_positions = 0;
 
-    let loops_threshold = 10000; // This is dumb! But it works...(does it?)
+    let loops_threshold = 16900; // This is dumb! But it works... (16900 is the area of the board) 
 
     // Index for loop to avoid having both &mut and &
     for y in 0..map.len(){
@@ -98,8 +99,9 @@ fn main() {
                 continue;
             }
             map[y][x] = '#';
-            let mut visited: HashSet<Point> = HashSet::new();
 
+            guard = start;
+            let mut visited: HashSet<Point> = HashSet::new();
             let mut direction: Directions = Directions::Up;
             let mut loops_count = 0;
             while let Some(to_look) = direction.look_offset().add(&guard) {
