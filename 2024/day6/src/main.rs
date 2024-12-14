@@ -1,6 +1,6 @@
-use std::{any::Any, fs};
+use std::{collections::HashSet, fs};
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Point {
     x: usize,
     y: usize,
@@ -32,7 +32,7 @@ impl Offset {
     }
 
     fn new(x: isize, y: isize) -> Self {
-        Offset {x, y}
+        Offset { x, y }
     }
 }
 
@@ -41,7 +41,7 @@ enum Directions {
     Up,
     Right,
     Down,
-    Left
+    Left,
 }
 
 impl Directions {
@@ -64,16 +64,15 @@ impl Directions {
     }
 }
 
-
 fn main() {
     let contents =
         fs::read_to_string("input.txt").expect("Should have been able to read input.txt!");
-    let map: Vec<Vec<char>> = contents.lines().map(|l| l.chars().collect()).collect();
+    let mut map: Vec<Vec<char>> = contents.lines().map(|l| l.chars().collect()).collect();
 
     let mut guard = Point::new();
 
-    'outer: for (y, line) in (&map).into_iter().enumerate() {
-        for (x, char) in line.into_iter().enumerate() {
+    'outer: for (y, line) in map.iter().enumerate() {
+        for (x, char) in line.iter().enumerate() {
             if *char == '^' {
                 guard.x = x;
                 guard.y = y;
@@ -82,23 +81,22 @@ fn main() {
         }
     }
 
-    let mut visited = 0;
+    map[guard.y][guard.x] = '.';
+
+    let mut visited: HashSet<Point> = HashSet::new();
 
     let mut direction: Directions = Directions::Up;
-    loop {
-        let to_look: Point = match direction.look_offset().add(&guard) {
-            Some(p) => p,
-            None => break,
-        };
-        
-        let is_obstacle: bool = match (match map.get(to_look.y) {
+    while let Some(to_look) = direction.look_offset().add(&guard) {
+        let is_obstacle: bool = match match map.get(to_look.y) {
             Some(row) => row,
-            None => break
-        }.get(to_look.x)) {
+            None => break,
+        }
+        .get(to_look.x)
+        {
             Some(c) => match c {
                 '#' => true,
                 '.' => false,
-                _ => unreachable!()
+                _ => unreachable!(),
             },
             None => break,
         };
@@ -106,10 +104,9 @@ fn main() {
             direction.turn();
         } else {
             guard = to_look;
-            visited += 1;
+            visited.insert(to_look);
         }
     }
-        
 
-    println!("{visited}")
+    println!("{}", visited.len())
 }
