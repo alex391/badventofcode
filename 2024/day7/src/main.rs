@@ -1,4 +1,4 @@
-// Use cargo run --release for this!
+// Use cargo run --release for this! More brute force...
 
 use std::{fs, str::FromStr};
 struct Calibration {
@@ -41,7 +41,6 @@ fn get_trit(mut integer: u32, index: usize) -> u8 {
         integer /= 3;
     }
     trits.push(integer as u8);
-    trits.reverse();
     *trits.get(index).unwrap_or(&0)
 }
 
@@ -56,7 +55,7 @@ fn main() {
     let contents = fs::read_to_string("input.txt").expect("Can't read input.txt!");
     let calibrations: Vec<Calibration> = contents.lines().map(|l| l.parse().unwrap()).collect();
 
-    let mut sum = 0;
+    let mut sum: i64 = 0;
     for calibration in calibrations {
         // The idea is that we'll go through all of the combinations as if
         // it's a ternary number: + is 0, * is 1, 2 is ||
