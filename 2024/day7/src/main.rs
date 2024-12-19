@@ -1,6 +1,6 @@
 use std::{fs, str::FromStr};
 struct Calibration {
-    test_value: i64,
+    expected: i64,
     equation: Vec<i64>,
 }
 
@@ -9,7 +9,7 @@ impl FromStr for Calibration {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split(&[' ', ':']).filter(|x| !x.is_empty());
-        let test_value: i64 = match split.next().ok_or("Can't parse test value")?.parse() {
+        let expected: i64 = match split.next().ok_or("Can't parse test value")?.parse() {
             Ok(i) => i,
             Err(e) => return Err(e.to_string()),
         };
@@ -23,10 +23,7 @@ impl FromStr for Calibration {
             }
         }
 
-        Ok(Calibration {
-            test_value,
-            equation,
-        })
+        Ok(Calibration { expected, equation })
     }
 }
 
@@ -43,27 +40,22 @@ fn main() {
     for calibration in calibrations {
         // The idea is that we'll go through all of the combinations as if
         // it's a binary number: + is 0, * is 1
-        let mut max_operator_combo: u32 = 0;
+        let operator_count = calibration.equation.len() - 1;
+        let max_operator_combo: u32 = 2u32.pow((operator_count).try_into().unwrap()) - 1; // operators = 2 -> 2^2 - 1 -> 0b100 - 1 -> 0b11
 
-        for i in 0..(calibration.equation.len() - 1) {
-            max_operator_combo ^= 1 << i;
-        }
-
-        println!("max_operator_combo: :{:#011b}", max_operator_combo);
-
-        for operator_combo in 0..=max_operator_combo {
+        'outer: for operator_combo in 0..=max_operator_combo {
             let mut answer = calibration.equation[0];
-            for i in 1..calibration.equation.len() {
-                println!("{:#011b}", operator_combo);
-                if is_bit_one(operator_combo, i) {
-                    answer *= calibration.equation[i];
-                } else {
-                    answer += calibration.equation[i];
+            for operator_index in 0..operator_count {
+                let equation_index = operator_index + 1;
+                match is_bit_one(operator_combo, operator_index) {
+                    true => answer *= calibration.equation[equation_index],
+                    false => answer += calibration.equation[equation_index],
                 }
             }
-            if answer == calibration.test_value {
-                sum += calibration.test_value;
-                break;
+
+            if answer == calibration.expected {
+                sum += calibration.expected;
+                break 'outer;
             }
         }
     }
