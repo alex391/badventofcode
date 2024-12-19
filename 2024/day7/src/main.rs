@@ -9,7 +9,7 @@ impl FromStr for Calibration {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split(&[' ', ':']).filter(|x| !x.is_empty());
-        let test_value: i64 = match split.next().ok_or("Can't parse stest value")?.parse() {
+        let test_value: i64 = match split.next().ok_or("Can't parse test value")?.parse() {
             Ok(i) => i,
             Err(e) => return Err(e.to_string()),
         };
@@ -40,19 +40,21 @@ fn main() {
     let calibrations: Vec<Calibration> = contents.lines().map(|l| l.parse().unwrap()).collect();
 
     let mut sum = 0;
-    'outer: for calibration in calibrations {
+    for calibration in calibrations {
         // The idea is that we'll go through all of the combinations as if
         // it's a binary number: + is 0, * is 1
         let mut max_operator_combo: u32 = 0;
-         
+
         for i in 0..(calibration.equation.len() - 1) {
             max_operator_combo ^= 1 << i;
         }
 
+        println!("max_operator_combo: :{:#011b}", max_operator_combo);
 
-        for operator_combo in 0..max_operator_combo {
+        for operator_combo in 0..=max_operator_combo {
             let mut answer = calibration.equation[0];
             for i in 1..calibration.equation.len() {
+                println!("{:#011b}", operator_combo);
                 if is_bit_one(operator_combo, i) {
                     answer *= calibration.equation[i];
                 } else {
@@ -61,11 +63,9 @@ fn main() {
             }
             if answer == calibration.test_value {
                 sum += calibration.test_value;
-                break 'outer;
+                break;
             }
-            
         }
-        
     }
     println!("{sum}");
 }
