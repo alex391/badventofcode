@@ -1,15 +1,17 @@
 # Use pypy3
 def checksum(disk: list[int]) -> int:
     sum = 0
-    for (position, block) in enumerate(disk):
+    for position, block in enumerate(disk):
         if block > 0:
             sum += position * block
     return sum
 
+
 def print_no_spaces(disk: list[int]):
     for block in disk:
-        print(block if block >= 0 else '.', end="")
+        print(block if block >= 0 else ".", end="")
     print()
+
 
 def is_fragmented(disk: list[int]) -> bool:
     # Does it encounter some positive ints, then just some negative ints, then end of list?
@@ -50,14 +52,14 @@ def main():
             break
 
         if disk[left_index] < 0:
-                # swap: https://stackoverflow.com/a/2493962
-                disk[left_index], disk[right_index] = disk[right_index], disk[left_index]
-                right_index -= 1
-            
+            # swap: https://stackoverflow.com/a/2493962
+            disk[left_index], disk[right_index] = disk[right_index], disk[left_index]
+            right_index -= 1
+
         else:
             left_index += 1
 
-    #print_no_spaces(disk)
+    # print_no_spaces(disk)
 
     print(checksum(disk))
 
