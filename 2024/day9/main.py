@@ -16,16 +16,15 @@ def print_no_spaces(disk: list[int]):
 def is_fragmented(disk: list[int]) -> bool:
     # Does it encounter some positive ints, then just some negative ints, then end of list?
     disk_itt = (item for item in disk)
-    while True:
-        try:
-            # This is kinda weird but we need next() to raise StopIteration
-            while next(disk_itt) >= 0:
-                pass
-            while next(disk_itt) < 0:
-                pass
-            return False
-        except StopIteration:
-            return True
+    try:
+        # This is kinda weird but we need next() to raise StopIteration
+        while next(disk_itt) >= 0:
+            pass
+        while next(disk_itt) < 0:
+            pass
+        return False
+    except StopIteration:
+        return True
 
 
 def main():
