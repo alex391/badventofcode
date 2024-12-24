@@ -1,4 +1,11 @@
 # Use pypy3
+from typing import NamedTuple
+
+
+class File(NamedTuple):
+    index: int
+    length: int
+
 def checksum(disk: list[int]) -> int:
     sum = 0
     for position, block in enumerate(disk):
@@ -12,31 +19,29 @@ def print_no_spaces(disk: list[int]):
         print(block if block >= 0 else ".", end="")
     print()
 
-
-def is_fragmented(disk: list[int]) -> bool:
-    # Does it encounter some positive ints, then just some negative ints, then end of list?
-    disk_itt = (item for item in disk)
-    try:
-        # This is kinda weird but we need next() to raise StopIteration
-        while next(disk_itt) >= 0:
-            pass
-        while next(disk_itt) < 0:
-            pass
-        return False
-    except StopIteration:
-        return True
+def has_space_for(file: File, index: int, disk: list[int]) -> bool:
+    for offset in range(file.length):
+        if offset + index > file.index:
+            return False
+        if disk[offset + index] >= 0:
+            return False
+    return True
 
 
 def main():
     disk: list[int] = []  # ID or -1 for blank
+    file_table: list[File] = [] # table from ID to File
     id = 0
     is_free = True
     with open("input.txt", "r") as f:
         while True:
             try:
                 if is_free:
-                    for _ in range(int(f.read(1))):
+                    file_start_index = len(disk)
+                    file_length = int(f.read(1))
+                    for _ in range(file_length):
                         disk.append(id)
+                    file_table.append(File(file_start_index, file_length))
                     id += 1
                 else:
                     for _ in range(int(f.read(1))):
@@ -44,19 +49,32 @@ def main():
                 is_free = not is_free
             except ValueError:
                 break
-    right_index = len(disk) - 1
+    # print_no_spaces(disk)
     left_index = 0
-    while left_index < right_index:
-        if is_fragmented(disk):
-            break
+    while len(file_table) > 0:
+        id = len(file_table) - 1
+        file = file_table.pop()
+        while True:
+            try:
+                has_space = has_space_for(file, left_index, disk)
+            except IndexError:
+                left_index = 0
+                break
+            if has_space:
+                for i in range(file.length):
+                    disk[left_index + i], disk[file.index + i] = disk[file.index + i], -1
+                # print_no_spaces(disk)
+                left_index = 0
+                break # We found space for this file!
+            else:
+                left_index += 1
+                if left_index >= len(disk):
+                    left_index = 0
+                    break
 
-        if disk[left_index] < 0:
-            # swap: https://stackoverflow.com/a/2493962
-            disk[left_index], disk[right_index] = disk[right_index], disk[left_index]
-            right_index -= 1
 
-        else:
-            left_index += 1
+
+
 
     # print_no_spaces(disk)
 
