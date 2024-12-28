@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fs};
+use std::fs;
 
 use counter::Counter;
 
@@ -36,7 +36,7 @@ fn main() {
         stones = new_stones;
     }
     let mut sum = 0;
-    for count in stones.values(){
+    for count in stones.values() {
         sum += count;
     }
     println!("{sum}");
