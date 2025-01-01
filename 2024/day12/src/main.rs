@@ -1,19 +1,20 @@
 use std::{
     collections::{HashSet, VecDeque},
-    fs,
+    fs, os::unix::raw::pid_t,
 };
 
 const NEIGHBOR_OFFSETS: [IPoint; 4] = [IPoint(0, -1), IPoint(1, 0), IPoint(0, 1), IPoint(-1, 0)];
+const CORNER_OFFSETS: [IPoint; 4] = [IPoint(1, 1), IPoint(1, -1), IPoint(-1, 1), IPoint(-1, -1)]; // https://advent-of-code.xavd.id/writeups/2024/day/12/
 
 #[derive(Debug)]
 struct Price {
     area: i32,
-    perimeter: i32,
+    sides: i32,
 }
 
 impl Price {
     fn get_price(&self) -> i32 {
-        self.area * self.perimeter
+        self.area * self.sides
     }
 }
 
@@ -65,34 +66,84 @@ impl IPoint {
     }
 }
 
+/// Return the number of corners that are here
+fn detect_corners(masked_garden: &[Vec<bool>], point: IPoint, interior: bool) -> i32 {
+    // Thanks to https://advent-of-code.xavd.id/writeups/2024/day/12/
+    let mut count = 0;
+    for i in 0..NEIGHBOR_OFFSETS.len() {
+        let first_offset = NEIGHBOR_OFFSETS[i];
+        let second_offset = NEIGHBOR_OFFSETS[(i + 1) % NEIGHBOR_OFFSETS.len()];
+        let first_point = point.add(&first_offset);
+        let second_point = point.add(&second_offset);
+        let mut first: bool = !interior;
+        let mut second: bool = !interior;
+        if first_point.in_bounds(masked_garden.len()) {
+            let first_point = first_point.to_upoint().unwrap();
+            first = masked_garden[first_point.1][first_point.0];
+        }
+        if second_point.in_bounds(masked_garden.len()) {
+            let second_point = second_point.to_upoint().unwrap();
+            second = masked_garden[second_point.1][second_point.0];
+        }
+        if first == interior && second == interior {
+            count += 1;
+            if interior {
+                continue;
+            }
+        }
+    }
+    count
+}
 
-/// Return the number of corners that are here (0, 1, or 2)
-fn detect_corner(masked_garden: &[Vec<bool>], point_outside: IPoint) -> i32 {
-    
+fn detect_all_corners(masked_garden: &[Vec<bool>], point: UPoint) -> i32 {
+    let mut corner_count = 0;
+    let signed_point = point.to_ipoint().unwrap();
+    // Exterior corners
+    for offset in CORNER_OFFSETS {
+        corner_count += detect_corners(masked_garden, signed_point.add(&offset), false);
+    }
+    //  Interior corners
+    for offset in CORNER_OFFSETS {
+        corner_count += detect_corners(masked_garden, signed_point.add(&offset), true);
+    }
+    corner_count 
 }
 
 fn flood_fill(masked_garden: &mut [Vec<bool>], start: UPoint) -> Price {
     // https://youtu.be/xlVX7dXLS64
     let mut queue: VecDeque<UPoint> = VecDeque::new();
     let mut visited: HashSet<UPoint> = HashSet::new();
-    let mut price: Price = Price {
-        area: 0,
-        perimeter: 0,
-    };
+    let mut price: Price = Price { area: 0, sides: 0 };
     queue.push_back(start);
     while !queue.is_empty() {
         let v = queue.pop_front().unwrap();
         if !visited.contains(&v) {
             price.area += 1;
             visited.insert(v);
+            price.sides += detect_all_corners(masked_garden, v);
             for offset in NEIGHBOR_OFFSETS {
                 let v = v.to_ipoint().unwrap();
                 let neighbor = v.add(&offset);
 
-                todo!("detect_corner here");
+                let mut interior: bool = false;
+                let unsigned_neighbor = neighbor.to_upoint();
+                if let Some(unsigned_neighbor) = unsigned_neighbor {
+                    if let Some(row) = masked_garden.get(unsigned_neighbor.1) {
+                        if let Some(i) = row.get(unsigned_neighbor.0) {
+                            interior = *i;
+                        }
+                    }
+                }
 
-                queue.push_back(match neighbor.to_upoint() {
-                    Some(x) => x,
+
+                queue.push_back(match unsigned_neighbor {
+                    Some(x) => {
+                        if interior {
+                            x
+                        } else {
+                            continue;
+                        }
+                    }
                     None => continue,
                 });
             }
@@ -128,7 +179,7 @@ fn main() {
                 if masked_garden[y][x] {
                     let price = flood_fill(&mut masked_garden, UPoint(x, y));
                     price_total += price.get_price();
-                    // println!("{:?}", price);
+                    println!("{region_name}: {:?}", price);
                 }
             }
         }
