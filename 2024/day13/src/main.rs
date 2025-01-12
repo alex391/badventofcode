@@ -129,15 +129,19 @@ fn shortest_path_cost(claw_machine: ClawMachine) -> Option<i32> {
     while !open_set.is_empty() {
         let current = open_set.pop().unwrap();
         if current.coordinate == claw_machine.prize {
-            return Some(current.cost);
+            return Some(g_score[&current]);
         }
         {
             let mut neighbor = Node{coordinate: (current.coordinate.0 + claw_machine.a.0, current.coordinate.1 + claw_machine.a.1), cost: 0};
             let tentative_g_score = g_score.get(&current).unwrap_or(&i32::MAX).saturating_add(A_TOKENS);
             if tentative_g_score < *g_score.get(&neighbor).unwrap_or(&i32::MAX) {
+                if tentative_g_score > 1000 {
+                    return None;
+                }
                 g_score.insert(neighbor, tentative_g_score);
-                f_score.insert(neighbor, tentative_g_score + h(&claw_machine, neighbor));
-                neighbor.cost = tentative_g_score;
+                let this_f_score = tentative_g_score + h(&claw_machine, neighbor);
+                f_score.insert(neighbor, this_f_score);
+                neighbor.cost = this_f_score;
                 open_set.push(neighbor);
             }
         }
@@ -146,9 +150,13 @@ fn shortest_path_cost(claw_machine: ClawMachine) -> Option<i32> {
             let mut neighbor = Node{coordinate: (current.coordinate.0 + claw_machine.b.0, current.coordinate.1 + claw_machine.b.1), cost: 0};
             let tentative_g_score = g_score.get(&current).unwrap_or(&i32::MAX).saturating_add(B_TOKENS);
             if tentative_g_score < *g_score.get(&neighbor).unwrap_or(&i32::MAX) {
+                if tentative_g_score > 1000 {
+                    return None;
+                }
                 g_score.insert(neighbor, tentative_g_score);
-                f_score.insert(neighbor, tentative_g_score + h(&claw_machine, neighbor));
-                neighbor.cost = tentative_g_score;
+                let this_f_score = tentative_g_score + h(&claw_machine, neighbor);
+                f_score.insert(neighbor, this_f_score);
+                neighbor.cost = this_f_score;
                 open_set.push(neighbor);
             }
         }
