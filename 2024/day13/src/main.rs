@@ -1,23 +1,24 @@
+#![feature(f128)]
 use std::convert::Infallible;
 use std::{fs, str::FromStr};
 use text_io::scan;
+
 
 const A_TOKENS: i64 = 3;
 const B_TOKENS: i64 = 1;
 
 const PART_ONE: bool = false;
 
-
-type Intersection = Option<(f64, f64)>;
+type Intersection = Option<(f128, f128)>;
 
 // https://stackoverflow.com/a/31497642
 trait IntersectionExt {
     #[allow(clippy::too_many_arguments)] // annoying to unpack
-    fn new(x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64, x4: f64, y4: f64) -> Self;
+    fn new(x1: f128, y1: f128, x2: f128, y2: f128, x3: f128, y3: f128, x4: f128, y4: f128) -> Self;
 }
 
 impl IntersectionExt for Intersection {
-    fn new(x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64, x4: f64, y4: f64) -> Self {
+    fn new(x1: f128, y1: f128, x2: f128, y2: f128, x3: f128, y3: f128, x4: f128, y4: f128) -> Self {
     // Thanks https://stackoverflow.com/a/385355
         let x12 = x1 - x2;
         let x34 = x3 - x4;
@@ -43,9 +44,9 @@ impl IntersectionExt for Intersection {
 
 }
 
-fn is_whole(float: f64) -> bool {
+fn is_whole(float: f128) -> bool {
     let fraction_part = float.fract().abs();
-    fraction_part <= 0.01 || fraction_part >= 0.99 // Tolerance may need to be bigger or smaller idk
+    fraction_part <= 0.0001 || fraction_part >= 0.9999
 }
 
 #[derive(Debug)]
@@ -56,12 +57,12 @@ struct ClawMachine {
     Button B: X+m, Y+q
     Prize: X=o, Y=r
      */
-    n: f64, // Yeah this naming scheme is terrible... see repo name
-    m: f64,
-    o: f64,
-    p: f64,
-    q: f64,
-    r: f64,
+    n: f128, // Yeah this naming scheme is terrible... see repo name
+    m: f128,
+    o: f128,
+    p: f128,
+    q: f128,
+    r: f128,
 }
 
 impl FromStr for ClawMachine {
@@ -77,12 +78,12 @@ impl FromStr for ClawMachine {
 
         scan!(s.bytes() => "Button A: X+{}, Y+{}\nButton B: X+{}, Y+{}\nPrize: X={}, Y={}", n, p, m, q, o, r);
         Ok(Self {
-            n,
-            m,
-            o: o + if !PART_ONE { 10000000000000.0 } else { 0.0 },
-            p,
-            q,
-            r: r + if !PART_ONE { 10000000000000.0 } else { 0.0 },
+            n: n as f128,
+            m: m as f128,
+            o: (o + if !PART_ONE { 10000000000000.0 } else { 0.0 }) as f128,
+            p: p as f128,
+            q: q as f128,
+            r: (r + if !PART_ONE { 10000000000000.0 } else { 0.0 }) as f128,
         })
     }
 }
@@ -107,11 +108,11 @@ impl ClawMachine {
         0
     }
 
-    fn f(&self, x: f64) -> f64 {
+    fn f(&self, x: f128) -> f128 {
         (self.o - (self.n * x)) / self.m
     }
 
-    fn g(&self, x: f64) -> f64 {
+    fn g(&self, x: f128) -> f128 {
         (self.r - (self.p * x)) / self.q
     }
 }
