@@ -31,10 +31,12 @@ int positive_modulo(int i, int n) {
 }
 
 // 0, 1, 2, 3, or negitive if none
+// 0 1
+// 3 2
 int quadrant(int x, int y)
 {
-	int x_mid = (HEIGHT / 2);
-	int y_mid = (WIDTH / 2);
+	int x_mid = WIDTH / 2;
+	int y_mid = HEIGHT / 2;
 	if (x == x_mid || y == y_mid) {
 		return -1;
 	}
@@ -42,10 +44,10 @@ int quadrant(int x, int y)
 		if (y < y_mid) {
 			return 0;
 		}
-		return 1;
+		return 3;
 	}
 	if(y < y_mid) {
-		return 3;
+		return 1;
 	}
 	return 2;
 }
@@ -94,15 +96,27 @@ int main()
 			robots[i].px = positive_modulo(robots[i].px, WIDTH);
 			robots[i].py = positive_modulo(robots[i].py, HEIGHT);
 		}
-		(void)0;
 	}
 	int quadrants[4] = { 0 };
+	int visualization[HEIGHT][WIDTH] = { 0 };
 	for (size_t i = 0; i < lines; i++) {
+		visualization[robots[i].py][robots[i].px]++;
 		int q = quadrant(robots[i].px, robots[i].py);
 		if (q < 0) {
 			continue;
 		}
 		quadrants[q]++;
+	}
+	for (size_t y = 0; y < HEIGHT; y++) {
+		for (size_t x = 0; x < WIDTH; x++) {
+			int count = visualization[y][x];
+			if (count == 0) {
+				printf(".");
+				continue;
+			}
+			printf("%d", count);
+		}
+		printf("\n");
 	}
 	int saftey_factor = quadrants[0] * quadrants[1] * quadrants[2] * quadrants[3];
 	printf("Part 1: %d\n", saftey_factor);
