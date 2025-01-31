@@ -33,8 +33,8 @@ int positive_modulo(int i, int n) {
 // 0, 1, 2, 3, or negitive if none
 int quadrant(int x, int y)
 {
-	int x_mid = (HEIGHT / 2) + 1;
-	int y_mid = (WIDTH / 2) + 1;
+	int x_mid = (HEIGHT / 2);
+	int y_mid = (WIDTH / 2);
 	if (x == x_mid || y == y_mid) {
 		return -1;
 	}
@@ -94,6 +94,7 @@ int main()
 			robots[i].px = positive_modulo(robots[i].px, WIDTH);
 			robots[i].py = positive_modulo(robots[i].py, HEIGHT);
 		}
+		(void)0;
 	}
 	int quadrants[4] = { 0 };
 	for (size_t i = 0; i < lines; i++) {
@@ -104,5 +105,5 @@ int main()
 		quadrants[q]++;
 	}
 	int saftey_factor = quadrants[0] * quadrants[1] * quadrants[2] * quadrants[3];
-	printf("Part 1: %d", saftey_factor);
+	printf("Part 1: %d\n", saftey_factor);
 }
