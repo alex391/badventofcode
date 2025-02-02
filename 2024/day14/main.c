@@ -4,7 +4,6 @@
 
 #define WIDTH 101
 #define HEIGHT 103
-#define TIME 100
 
 struct robot {
 	int px;
@@ -28,26 +27,6 @@ size_t count_lines(FILE *f)
 int positive_modulo(int i, int n) {
 	// https://stackoverflow.com/a/14997413
 	return (i % n + n) % n;
-}
-
-// 0, 1, 2, 3, or negitive if none
-int quadrant(int x, int y)
-{
-	int x_mid = (HEIGHT / 2);
-	int y_mid = (WIDTH / 2);
-	if (x == x_mid || y == y_mid) {
-		return -1;
-	}
-	if (x < x_mid) {
-		if (y < y_mid) {
-			return 0;
-		}
-		return 1;
-	}
-	if(y < y_mid) {
-		return 3;
-	}
-	return 2;
 }
 
 int main()
@@ -86,7 +65,8 @@ int main()
 		this_robot++;
 	}
 	fclose(f);
-	for (int t = 0; t < TIME; t++) {
+	int frames = 1;
+	while(true) {
 		for (size_t i = 0; i < lines; i++) {
 			robots[i].px += robots[i].vx;
 			robots[i].py += robots[i].vy;
@@ -94,16 +74,32 @@ int main()
 			robots[i].px = positive_modulo(robots[i].px, WIDTH);
 			robots[i].py = positive_modulo(robots[i].py, HEIGHT);
 		}
-		(void)0;
-	}
-	int quadrants[4] = { 0 };
-	for (size_t i = 0; i < lines; i++) {
-		int q = quadrant(robots[i].px, robots[i].py);
-		if (q < 0) {
-			continue;
+		int visualization[HEIGHT][WIDTH] = { 0 };
+		for (size_t i = 0; i < lines; i++) {
+			visualization[robots[i].py][robots[i].px]++;
 		}
-		quadrants[q]++;
+		for (size_t y = 0; y < HEIGHT; y++) {
+			for (size_t x = 0; x < WIDTH; x++) {
+				if (visualization[y][x] > 1) {
+					goto skip_visualization;
+				}
+			}
+		}
+		for (size_t y = 0; y < HEIGHT; y++) {
+			for (size_t x = 0; x < WIDTH; x++) {
+				int count = visualization[y][x];
+				if (count == 0) {
+					printf(".");
+					continue;
+				}
+				printf("%d", count);
+			}
+			printf("\n");
+		}
+		printf("frame: %d\n", frames);
+		return 0;
+skip_visualization:
+		frames++;
 	}
-	int saftey_factor = quadrants[0] * quadrants[1] * quadrants[2] * quadrants[3];
-	printf("Part 1: %d\n", saftey_factor);
+
 }
