@@ -74,6 +74,8 @@ def push_connected_boxes(grid: list[list[str]], robot: Point, direction: Point):
         robot += direction
         grid[robot.y][robot.x] = "@"
         return
+    if grid[robot.y + direction.y][robot.x + direction.x] == "#":
+        return
 
     s = []
     discovered = set()
@@ -142,35 +144,15 @@ def main():
                 robot.y = y
                 break
 
-    # Visualization:
-    for row in grid:
-        for item in row:
-            print(item, end="")
-        print()
-
     # Then move:
     for instruction in instructions:
         push_connected_boxes(grid, robot, DIRECTION_LOOKUP[instruction])
-        # Visualization:
-        print(f"Move {instruction}:")
-        for row in grid:
-            for item in row:
-                print(item, end="")
-            print()
-        print(f"Robot: ({robot.x}, {robot.y})")
-        print()
-
-    # Visualization:
-    for row in grid:
-        for item in row:
-            print(item, end="")
-        print()
 
     # GPS
     gps = 0
     for y, row in enumerate(grid):
         for x, column in enumerate(row):
-            if column == "O":
+            if column == "[":
                 gps += (100 * y) + x
     print(gps)
 
