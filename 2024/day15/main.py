@@ -7,6 +7,17 @@ class Point:
         self.x = x
         self.y = y
 
+    # https://stackoverflow.com/a/2909119
+    def __key(self):
+        return (self.x, self.y) 
+    
+    def __hash__(self):
+        return hash(self.__key())
+    
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
 
@@ -18,21 +29,21 @@ class Point:
 
 def adjacent_boxes(
     grid: list[list[str]], box: Point, direction: Point
-) -> Optional[list[Point]]:
+) -> Optional[set[Point]]:
     """
-    return a list of Points, representing coordinates of connected boxes, or
+    return a set of Points, representing coordinates of connected boxes, or
     None if a # is encountered
     """
-    adjacent = []
+    adjacent = set()
     box_type = grid[box.y][box.x]
     if box_type == "[":
-        adjacent.append(box + Point(0, 1))
+        adjacent.add(box + Point(1, 0))
     else:
-        adjacent.append(box + Point(0, -1))
+        adjacent.add(box + Point(-1, 0))
     neighbor_coordinate = box + direction
     neighbor = grid[neighbor_coordinate.y][neighbor_coordinate.x]
     if neighbor == "[" or neighbor == "]":
-        adjacent.append(neighbor_coordinate)
+        adjacent.add(neighbor_coordinate)
     elif neighbor == "#":
         return None
     return adjacent
@@ -55,36 +66,48 @@ def push_connected_boxes(grid: list[list[str]], robot: Point, direction: Point):
     # then move all the connected boxes up one
 
     # https://en.wikipedia.org/wiki/Depth-first_search
+
+
+    if grid[robot.y + direction.y][robot.x + direction.x] == ".":
+        # Nothing to do except move the robot
+        grid[robot.y][robot.x] = "."
+        robot += direction
+        grid[robot.y][robot.x] = "@"
+        return
+
     s = []
-    discovered = {robot + direction}
-    s.push(robot + direction)
-    while s.len() > 0:
+    discovered = set()
+    s.append(robot + direction)
+    while len(s) > 0:
         v = s.pop()
         if v not in discovered:
             discovered.add(v)
             edges = adjacent_boxes(grid, v, direction)
+            if edges is None:
+                return # Just do nothing if we can't move the whole group
+            for w in edges:
+                s.append(w)
+    
+    temp_grid = copy.deepcopy(grid)
+    for box_half in discovered:
+        grid[box_half.y][box_half.x] = "."
+
+    grid[robot.y][robot.x] = "."
+    
+    for box_half in discovered:
+        moved = box_half + direction
+        grid[moved.y][moved.x] = temp_grid[box_half.y][box_half.x]
+
+    robot += direction
+    grid[robot.y][robot.x] = "@"
 
 
-
-
-def push(grid: list[list[str]], robot: Point, instruction: str):
-    direction_lookup = {
-        "^": Point(0, -1),
-        ">": Point(1, 0),
-        "v": Point(0, 1),
-        "<": Point(-1, 0),
-    }
-    look_direction = direction_lookup[instruction]
-    look_cursor = copy.deepcopy(robot)
-    while True:
-        look_cursor += look_direction
-        under_cursor = grid[look_cursor.y][look_cursor.x]
-        if under_cursor == "#":
-            break
-        if under_cursor == ".":
-            grid[robot.y][robot.x] = "."
-            grid[look_cursor.y][look_cursor.x] = "@"
-
+DIRECTION_LOOKUP = {
+    "^": Point(0, -1),
+    ">": Point(1, 0),
+    "v": Point(0, 1),
+    "<": Point(-1, 0),
+}
 
 def main():
     grid: list[list[str]] = []
@@ -103,6 +126,7 @@ def main():
                 if item == "@":
                     doubled_row.append("@")
                     doubled_row.append(".")
+                    continue
                 doubled_row.append(item)
                 doubled_row.append(item)
             grid.append(doubled_row)
@@ -118,9 +142,23 @@ def main():
                 robot.y = y
                 break
 
+    # Visualization:
+    for row in grid:
+        for item in row:
+            print(item, end="")
+        print()
+
     # Then move:
     for instruction in instructions:
-        push(grid, robot, instruction)
+        push_connected_boxes(grid, robot, DIRECTION_LOOKUP[instruction])
+        # Visualization:
+        print(f"Move {instruction}:")
+        for row in grid:
+            for item in row:
+                print(item, end="")
+            print()
+        print(f"Robot: ({robot.x}, {robot.y})")
+        print()
 
     # Visualization:
     for row in grid:
