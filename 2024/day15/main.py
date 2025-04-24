@@ -57,6 +57,14 @@ def push_connected_boxes(grid: list[list[str]], robot: Point, direction: Point):
     # https://en.wikipedia.org/wiki/Depth-first_search
     s = []
     discovered = {robot + direction}
+    s.push(robot + direction)
+    while s.len() > 0:
+        v = s.pop()
+        if v not in discovered:
+            discovered.add(v)
+            edges = adjacent_boxes(grid, v, direction)
+
+
 
 
 def push(grid: list[list[str]], robot: Point, instruction: str):
