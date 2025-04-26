@@ -9,14 +9,13 @@ class Point:
 
     # https://stackoverflow.com/a/2909119
     def __key(self):
-        return (self.x, self.y) 
-    
+        return (self.x, self.y)
+
     def __hash__(self):
         return hash(self.__key())
-    
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
-
 
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -67,7 +66,6 @@ def push_connected_boxes(grid: list[list[str]], robot: Point, direction: Point):
 
     # https://en.wikipedia.org/wiki/Depth-first_search
 
-
     if grid[robot.y + direction.y][robot.x + direction.x] == ".":
         # Nothing to do except move the robot
         grid[robot.y][robot.x] = "."
@@ -86,16 +84,16 @@ def push_connected_boxes(grid: list[list[str]], robot: Point, direction: Point):
             discovered.add(v)
             edges = adjacent_boxes(grid, v, direction)
             if edges is None:
-                return # Just do nothing if we can't move the whole group
+                return  # Just do nothing if we can't move the whole group
             for w in edges:
                 s.append(w)
-    
+
     temp_grid = copy.deepcopy(grid)
     for box_half in discovered:
         grid[box_half.y][box_half.x] = "."
 
     grid[robot.y][robot.x] = "."
-    
+
     for box_half in discovered:
         moved = box_half + direction
         grid[moved.y][moved.x] = temp_grid[box_half.y][box_half.x]
@@ -110,6 +108,7 @@ DIRECTION_LOOKUP = {
     "v": Point(0, 1),
     "<": Point(-1, 0),
 }
+
 
 def main():
     grid: list[list[str]] = []
