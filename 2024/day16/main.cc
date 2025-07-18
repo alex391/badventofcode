@@ -10,13 +10,18 @@
 
 using Map = std::vector<std::vector<char>>;
 
-// The offsets for all four neighbors of a grid position
-const std::pair<int, int> neighbors[] {
-	{0, -1},
-	{1, 0},
-	{0, 1},
-	{-1, 0}
+// The actions you can take at any node
+enum class Action {
+	straight,
+	left,
+	right
 };
+
+// Doing this in two steps:
+// Flood fill to find all the connected paths through the maze and to build a
+// more usable map out of the input
+//
+// Djikstra's algroithm to find the shortest path from
 
 void visualize_map(Map map)
 {
@@ -78,7 +83,7 @@ djikstra(Map map, std::pair<int, int> start)
 	while(!unviseted.empty()) {
 		auto current_node = minimum_dist(unviseted, dist);
 		unviseted.erase(current_node);
-
+		// TODO
 
 	}
 }
