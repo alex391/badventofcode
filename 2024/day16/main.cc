@@ -7,21 +7,62 @@
 #include <map>
 #include <limits>
 #include <set>
-
-using Map = std::vector<std::vector<char>>;
-
-// The actions you can take at any node
-enum class Action {
-	straight,
-	left,
-	right
-};
+#include <deque>
 
 // Doing this in two steps:
 // Flood fill to find all the connected paths through the maze and to build a
 // more usable map out of the input
 //
-// Djikstra's algroithm to find the shortest path from
+// Djikstra's algroithm to find the shortest path from there
+
+using Map = std::vector<std::vector<char>>;
+
+// The offsets for all four neighbors of a grid position
+const std::pair<int, int> neighbors[] {
+       {0, -1},
+       {1, 0},
+       {0, 1},
+       {-1, 0}
+};
+
+enum class Facing {
+	north,
+	east,
+	south,
+	west
+};
+
+class Node {
+	// https://excalidraw.com/#json=kthX3FK3IfsO3rlKIo93k,tjk9H4IR5C0mb0cAHQJkUg
+	public:
+		Node *straight = 0;
+		Node *left = 0;
+		Node *right = 0;
+		// It's coordinate and facing uniquely identify this node
+		Facing facing; 
+		std::pair<int, int> coordinate;
+
+		Node(Facing facing, std::pair<int, int> coordinate): 
+			facing(facing), coordinate(coordinate)
+			{ };
+
+		bool operator==(const Node& rhs)
+		{
+			return this->facing == rhs.facing && this->coordinate == rhs.coordinate;
+		}
+
+		bool operator<(const Node& rhs)
+		{
+			int rhs_facing = static_cast<int>(rhs.facing);
+			int lhs_facing = static_cast<int>(this->facing);
+			if (lhs_facing != rhs_facing) {
+				return lhs_facing < rhs_facing;
+			}
+
+			return this->coordinate < rhs.coordinate;
+		}
+};
+
 
 void visualize_map(Map map)
 {
@@ -43,6 +84,44 @@ std::pair<int, int> find_char(Map map, char c)
 		}
 	}
 	throw std::runtime_error(std::format("c ({}) not found in map", c));
+}
+
+
+bool in_bounds(std::pair<int, int> coordinate, Map map)
+{
+	return coordinate.first >= 0
+		&& coordinate.second >= 0
+		&& coordinate.second < map.size()
+		&& coordinate.first < map[0].size();
+}
+
+// returns a set of all the nodes, and a pointer to the start node
+// https://en.wikipedia.org/wiki/Flood_fill
+std::pair<Node*, std::set<Node>> flood_fill(Map map)
+{
+	auto start = find_char(map, 'S');
+	
+	std::deque<std::pair<int, int>> q;
+	q.push_back(start);
+	while (!q.empty()) {
+		std::pair<int, int> n = q.front();
+		q.pop_front();
+		char tile = map[n.second][n.first];
+		if (tile == '#') {
+			continue;
+		}
+		// TODO add nodes to graph for this coordinate
+		for (auto neighbor_offset: neighbors) {
+			std::pair<int, int> neighbor = {
+				n.first + neighbor_offset.first, 
+				n.second + neighbor_offset.second
+			};
+			if (in_bounds(neighbor, map)) {
+				q.push_back(neighbor);
+			}
+		}
+	}
+
 }
 
 // find the node in q with the smallest distance
@@ -105,6 +184,4 @@ int main()
 	}
 	file.close();
 	visualize_map(map);
-	auto start = find_char(map, 'S');
-	auto end = find_char(map, 'E');
 }
