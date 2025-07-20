@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <format>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <deque>
 #include <algorithm>
@@ -47,16 +48,22 @@ class Node {
 		Node(Facing facing, std::pair<int, int> coordinate): 
 			facing(facing), coordinate(coordinate)
 			{ };
-
-		bool operator==(const Node& rhs)
-		{
-			return this->facing == rhs.facing && this->coordinate == rhs.coordinate;
-		}
-
-
 };
 
-const bool operator<(const Node& lhs, const Node& rhs)
+template<>
+struct std::hash<Node> {
+	std::size_t operator()(const Node& n) const noexcept
+	{
+		std::size_t h1 = std::hash<Facing>{}(n.facing);
+		std::size_t h2 = std::hash<int>{}(n.coordinate.first);
+		std::size_t h3 = std::hash<int>{}(n.coordinate.second);
+		
+		std::size_t temp = h1 ^ (h2 << 1);
+		return temp ^ (h3 << 1);
+	}
+};
+
+const bool operator<(const Node &lhs, const Node &rhs)
 {
        int rhs_facing = static_cast<int>(rhs.facing);
        int lhs_facing = static_cast<int>(lhs.facing);
@@ -67,7 +74,12 @@ const bool operator<(const Node& lhs, const Node& rhs)
        return lhs.coordinate < rhs.coordinate;
 }
 
-void visualize_map(Map map)
+const bool operator==(const Node &lhs, const Node& rhs)
+{
+	return lhs.facing == rhs.facing && lhs.coordinate == rhs.coordinate;
+}
+
+void visualize_map(Map &map)
 {
 	for (auto row: map) {
 		for (auto tile: row) {
@@ -77,7 +89,7 @@ void visualize_map(Map map)
 	}
 }
 
-std::pair<int, int> find_char(Map map, char c)
+std::pair<int, int> find_char(const Map &map, char c)
 {
 	for (Map::size_type height = map.size(), y = 0; y < height; y++) {
 		for (Map::size_type width = map[y].size(), x = 0; x < width; x++) {
@@ -89,7 +101,7 @@ std::pair<int, int> find_char(Map map, char c)
 	throw std::runtime_error(std::format("c ({}) not found in map", c));
 }
 
-bool in_bounds(std::pair<int, int> coordinate, Map map)
+bool in_bounds(std::pair<int, int> coordinate, const Map &map)
 {
 	return coordinate.first >= 0
 		&& coordinate.second >= 0
@@ -99,12 +111,12 @@ bool in_bounds(std::pair<int, int> coordinate, Map map)
 
 // returns a vector of all the nodes, the start node is the first element
 // https://en.wikipedia.org/wiki/Flood_fill
-std::vector<Node> flood_fill(Map map)
+std::vector<Node> flood_fill(const Map &map)
 {
 	auto start = find_char(map, 'S');
 
 	std::vector<Node> nodes;
-	std::map<Node, int> node_indices; // For searching later
+	std::unordered_map<Node, int> node_indices; // For searching later
 	int cursor = 0;
 
 	std::deque<std::pair<int, int>> q;
@@ -137,7 +149,7 @@ std::vector<Node> flood_fill(Map map)
 				n.second + neighbor_offset.second
 			};
 			// Add to q, only if it's in bounds, and only if we havn't added it already
-			if (in_bounds(neighbor, map) && (node_indices.count(Node(Facing::east, neighbor)))) {
+			if (in_bounds(neighbor, map) && (!node_indices.count(Node(Facing::east, neighbor)))) {
 				q.push_back(neighbor);
 			}
 		}
@@ -201,7 +213,7 @@ int main()
 {
 	std::ifstream file("input.txt");
 	if (!file.is_open()) {
-		std::cerr << "Can't open input.txt!";
+		std::cerr << "Can't open input.txt!\n";
 	}
 
 	Map map;
@@ -214,6 +226,6 @@ int main()
 	}
 	file.close();
 	visualize_map(map);
-	flood_fill(map);
-
+	auto graph = flood_fill(map);
+	std::cout << graph.size() << '\n';
 }
