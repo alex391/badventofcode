@@ -5,9 +5,9 @@
 #include <stdexcept>
 #include <format>
 #include <map>
-#include <limits>
 #include <set>
 #include <deque>
+#include <algorithm>
 
 // Doing this in two steps:
 // Flood fill to find all the connected paths through the maze and to build a
@@ -19,25 +19,27 @@ using Map = std::vector<std::vector<char>>;
 
 // The offsets for all four neighbors of a grid position
 const std::pair<int, int> neighbors[] {
-       {0, -1},
-       {1, 0},
-       {0, 1},
-       {-1, 0}
+	// these are in the same order as Facing
+	{1, 0},
+	{0, 1},
+	{-1, 0},
+	{0, -1},
 };
 
 enum class Facing {
-	north,
-	east,
+	east, // this is frist because it's the starting direction
 	south,
-	west
+	west,
+	north,
 };
 
 class Node {
 	// https://excalidraw.com/#json=kthX3FK3IfsO3rlKIo93k,tjk9H4IR5C0mb0cAHQJkUg
 	public:
-		Node *straight = 0;
-		Node *left = 0;
-		Node *right = 0;
+		// indexes into the vector that stores all of the nodes:
+		int straight = -1;
+		int left = -1;
+		int right = -1;
 		// It's coordinate and facing uniquely identify this node
 		Facing facing; 
 		std::pair<int, int> coordinate;
@@ -49,17 +51,6 @@ class Node {
 		bool operator==(const Node& rhs)
 		{
 			return this->facing == rhs.facing && this->coordinate == rhs.coordinate;
-		}
-
-		bool operator<(const Node& rhs)
-		{
-			int rhs_facing = static_cast<int>(rhs.facing);
-			int lhs_facing = static_cast<int>(this->facing);
-			if (lhs_facing != rhs_facing) {
-				return lhs_facing < rhs_facing;
-			}
-
-			return this->coordinate < rhs.coordinate;
 		}
 };
 
@@ -86,7 +77,6 @@ std::pair<int, int> find_char(Map map, char c)
 	throw std::runtime_error(std::format("c ({}) not found in map", c));
 }
 
-
 bool in_bounds(std::pair<int, int> coordinate, Map map)
 {
 	return coordinate.first >= 0
@@ -95,12 +85,15 @@ bool in_bounds(std::pair<int, int> coordinate, Map map)
 		&& coordinate.first < map[0].size();
 }
 
-// returns a set of all the nodes, and a pointer to the start node
+// returns a vector of all the nodes, the start node is the first element
 // https://en.wikipedia.org/wiki/Flood_fill
-std::pair<Node*, std::set<Node>> flood_fill(Map map)
+std::vector<Node> flood_fill(Map map)
 {
 	auto start = find_char(map, 'S');
-	
+
+	std::vector<Node> nodes;
+	int cursor = 0;
+
 	std::deque<std::pair<int, int>> q;
 	q.push_back(start);
 	while (!q.empty()) {
@@ -110,18 +103,45 @@ std::pair<Node*, std::set<Node>> flood_fill(Map map)
 		if (tile == '#') {
 			continue;
 		}
-		// TODO add nodes to graph for this coordinate
+
+		// Add the four nodes to the vector
+		for(int i = 0; i < 4; i++) {
+			nodes.push_back(Node(static_cast<Facing>(i), n));
+		}
+
+		// Set it's left and right neihghbors
+		for (int i = 0; i < 4; i++) {
+			nodes[cursor + i].left = cursor + ((i + 3) % 4);
+			nodes[cursor + i].right = cursor + ((i + 1) % 4);
+		}
+		
+		cursor += 4;
+		
 		for (auto neighbor_offset: neighbors) {
 			std::pair<int, int> neighbor = {
 				n.first + neighbor_offset.first, 
 				n.second + neighbor_offset.second
 			};
-			if (in_bounds(neighbor, map)) {
+			// Add to q, only if it's in bounds, and only if we havn't added it already
+			if (in_bounds(neighbor, map) && (std::find(nodes.begin(), nodes.end(), Node(Facing::east, neighbor)) == nodes.end())) {
 				q.push_back(neighbor);
 			}
 		}
 	}
+	// Find the indexes for straight, if they exist
+	for (std::vector<Node>::size_type i = 0, size = nodes.size(); i < size; i++) {
+		std::pair<int, int> coordinate_in_front_of = { 
+			nodes[i].coordinate.first + neighbors[static_cast<int>(nodes[i].facing)].first,
+			nodes[i].coordinate.second + neighbors[static_cast<int>(nodes[i].facing)].second,
+		};
 
+		auto forward = std::find(nodes.begin(), nodes.end(), Node(nodes[i].facing, coordinate_in_front_of));
+		if (forward == nodes.end()) {
+			continue;
+		}
+		nodes[i].straight = forward - nodes.begin();
+	}
+	return nodes;
 }
 
 // find the node in q with the smallest distance
