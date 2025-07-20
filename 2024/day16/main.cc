@@ -52,8 +52,20 @@ class Node {
 		{
 			return this->facing == rhs.facing && this->coordinate == rhs.coordinate;
 		}
+
+
 };
 
+const bool operator<(const Node& lhs, const Node& rhs)
+{
+       int rhs_facing = static_cast<int>(rhs.facing);
+       int lhs_facing = static_cast<int>(lhs.facing);
+       if (lhs_facing != rhs_facing) {
+	       return lhs_facing < rhs_facing;
+       }
+
+       return lhs.coordinate < rhs.coordinate;
+}
 
 void visualize_map(Map map)
 {
@@ -81,8 +93,8 @@ bool in_bounds(std::pair<int, int> coordinate, Map map)
 {
 	return coordinate.first >= 0
 		&& coordinate.second >= 0
-		&& coordinate.second < map.size()
-		&& coordinate.first < map[0].size();
+		&& static_cast<Map::size_type>(coordinate.second) < map.size() // Casting explicitly to get rid of warning: we know here that it's positive anyway
+		&& static_cast<Map::size_type>(coordinate.first) < map[0].size();
 }
 
 // returns a vector of all the nodes, the start node is the first element
@@ -92,6 +104,7 @@ std::vector<Node> flood_fill(Map map)
 	auto start = find_char(map, 'S');
 
 	std::vector<Node> nodes;
+	std::map<Node, int> node_indices; // For searching later
 	int cursor = 0;
 
 	std::deque<std::pair<int, int>> q;
@@ -107,6 +120,7 @@ std::vector<Node> flood_fill(Map map)
 		// Add the four nodes to the vector
 		for(int i = 0; i < 4; i++) {
 			nodes.push_back(Node(static_cast<Facing>(i), n));
+			node_indices[nodes.back()] = nodes.size() - 1;
 		}
 
 		// Set it's left and right neihghbors
@@ -123,7 +137,7 @@ std::vector<Node> flood_fill(Map map)
 				n.second + neighbor_offset.second
 			};
 			// Add to q, only if it's in bounds, and only if we havn't added it already
-			if (in_bounds(neighbor, map) && (std::find(nodes.begin(), nodes.end(), Node(Facing::east, neighbor)) == nodes.end())) {
+			if (in_bounds(neighbor, map) && (node_indices.count(Node(Facing::east, neighbor)))) {
 				q.push_back(neighbor);
 			}
 		}
@@ -134,12 +148,8 @@ std::vector<Node> flood_fill(Map map)
 			nodes[i].coordinate.first + neighbors[static_cast<int>(nodes[i].facing)].first,
 			nodes[i].coordinate.second + neighbors[static_cast<int>(nodes[i].facing)].second,
 		};
-
-		auto forward = std::find(nodes.begin(), nodes.end(), Node(nodes[i].facing, coordinate_in_front_of));
-		if (forward == nodes.end()) {
-			continue;
-		}
-		nodes[i].straight = forward - nodes.begin();
+		int straight = node_indices[Node(nodes[i].facing, coordinate_in_front_of)];
+		nodes[i].straight = straight;
 	}
 	return nodes;
 }
@@ -204,4 +214,6 @@ int main()
 	}
 	file.close();
 	visualize_map(map);
+	flood_fill(map);
+
 }
