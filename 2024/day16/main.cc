@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <format>
 #include <map>
-#include <unordered_map>
 #include <set>
 #include <deque>
 #include <algorithm>
@@ -48,19 +47,6 @@ class Node {
 		Node(Facing facing, std::pair<int, int> coordinate): 
 			facing(facing), coordinate(coordinate)
 			{ };
-};
-
-template<>
-struct std::hash<Node> {
-	std::size_t operator()(const Node& n) const noexcept
-	{
-		std::size_t h1 = std::hash<Facing>{}(n.facing);
-		std::size_t h2 = std::hash<int>{}(n.coordinate.first);
-		std::size_t h3 = std::hash<int>{}(n.coordinate.second);
-		
-		std::size_t temp = h1 ^ (h2 << 1);
-		return temp ^ (h3 << 1);
-	}
 };
 
 const bool operator<(const Node &lhs, const Node &rhs)
@@ -116,7 +102,7 @@ std::vector<Node> flood_fill(const Map &map)
 	auto start = find_char(map, 'S');
 
 	std::vector<Node> nodes;
-	std::unordered_map<Node, int> node_indices; // For searching later
+	std::map<Node, int> node_indices; // For searching later
 	int cursor = 0;
 
 	std::deque<std::pair<int, int>> q;
