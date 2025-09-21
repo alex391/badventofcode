@@ -110,10 +110,6 @@ std::vector<Node> flood_fill(const Map &map)
 	while (!q.empty()) {
 		std::pair<int, int> n = q.front();
 		q.pop_front();
-		char tile = map[n.second][n.first];
-		if (tile == '#') {
-			continue;
-		}
 
 		// Add the four nodes to the vector
 		for(int i = 0; i < 4; i++) {
@@ -136,7 +132,10 @@ std::vector<Node> flood_fill(const Map &map)
 			};
 			// Add to q, only if it's in bounds, and only if we havn't added it already
 			if (in_bounds(neighbor, map) && (!node_indices.count(Node(Facing::east, neighbor)))) {
-				q.push_back(neighbor);
+				char tile = map[neighbor.second][neighbor.first];
+				if (tile != '#') {
+					q.push_back(neighbor);
+				}
 			}
 		}
 	}
