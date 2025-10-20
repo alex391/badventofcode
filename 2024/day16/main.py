@@ -2,7 +2,6 @@
 # over. I also had a look at
 # https://todd.ginsberg.com/post/advent-of-code/2024/day16/
 
-# also oh boy this is slow... use pypy3
 import copy
 from enum import Enum
 from queue import PriorityQueue
@@ -75,10 +74,10 @@ class Location:
         return self.position(), self.direction
 
     def clockwise(self):
-        return Location(copy.deepcopy(self.positions), self.direction.clockwise())
+        return Location(copy.copy(self.positions), self.direction.clockwise())
 
     def counterclockwise(self):
-        return Location(copy.deepcopy(self.positions), self.direction.counterclockwise())
+        return Location(copy.copy(self.positions), self.direction.counterclockwise())
 
 
 class ScoredLocation:
@@ -129,7 +128,7 @@ def traverse_maze(maze: list[str], start: Point, end: Point) -> int:
             q.put(ScoredLocation(location.counterclockwise(), cost + 1000))
             location.step()
             if location.position().list_lookup(maze) != "#":
-                q.put(ScoredLocation(copy.deepcopy(location), cost + 1))
+                q.put(ScoredLocation(copy.copy(location), cost + 1))
             else:
                 location.unstep()
 
