@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+
+#ifndef PANIC_C
+#define PANIC_C
+
+// Returns a pointer that's guaranteed to not be zero (if it returns)
+void *panic_if_zero(void *p)
+{
+	if (!p) {
+		// If debugging, put a breakpoint here:
+		fprintf(stderr, "p is zero, something has gone terribly wrong!!");
+		exit(1);
+	}
+	return p;
+}
+
+// Exit if i == bad
+void panic_if_equal(long long i, long long bad)
+{
+	if (i == bad) {
+		fprintf(stderr, "i is expected to not be %lld", bad);
+		exit(1);
+	}
+}
+
+// Exit if i > max_good
+void panic_if_greater(long long i, long long max_good)
+{
+	if (i > max_good) {
+		fprintf(stderr, "i is expected to not be greater than %lld", max_good);
+		exit(1);
+	}
+}
+
+// Exit if i < min_good
+void panic_if_less(long long i, long long min_good)
+{
+	if (i < min_good) {
+		fprintf(stderr, "i is expected to not be less than %lld", min_good);
+		exit(1);
+	}
+}
+
+#endif
