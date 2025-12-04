@@ -226,13 +226,13 @@ int32_t str_to_int32_t(struct str s)
 		sign = -1;
 		value_part = (struct str) { .s = s.s + 1, .len = s.len - 1 };
 	}
-	int32_t value = 0;
+	uint32_t value = 0;
 
 	// "-123"
 	// -1 * ( 1 * 100 + 2 * 10 + 3 * 1)
 	
 	// starts off at the 1s place, then goes to 10s place, etc
-	int32_t ns_place = 1;
+	uint32_t ns_place = 1;
 	for (uint32_t i = value_part.len; i--;) {
 		if (!isdigit(value_part.s[i])) {
 			break;
