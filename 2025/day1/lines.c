@@ -14,7 +14,7 @@ struct vec *lines_new(FILE *f)
 				int peeked = fgetc(f);
 				if (peeked == EOF) {
 					// polite \n at end of file
-					return lines;
+					return lines; // Yup, this is a bug hidden by the last input for me being too small to click
 				}
 				ungetc(peeked, f);
 				break;
