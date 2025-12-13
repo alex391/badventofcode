@@ -1,27 +1,26 @@
+#include <stdckdint.h>
 #include "lines.c"
 
-uint8_t best_joltage(union shortstr battery_bank)
+#define BATTERIES 12
+
+int64_t best_joltage(union shortstr battery_bank)
 {
-	uint8_t first_digit = 0;
-	uint8_t first_digit_index = 0;
-	panic_if_less(battery_bank.len, 1);
-	for (uint8_t i = 0; i < battery_bank.len - 1; i++) {
-		if (battery_bank.data[i] > first_digit) {
-			first_digit = battery_bank.data[i];
-			first_digit_index = i;
+	panic_if_less(battery_bank.len, BATTERIES);
+
+	char digits[BATTERIES] = { 0 };
+	uint8_t digit_indexes[BATTERIES] = { 0 };
+
+	for (int32_t battery = 0; battery < BATTERIES; battery++) {
+		uint8_t first_battery = battery == 0 ? 0 : digit_indexes[battery - 1] + 1;
+		for(uint8_t i = first_battery; i < battery_bank.len - (BATTERIES - (battery + 1)); i++) {
+			if (battery_bank.data[i] > digits[battery]) {
+				digits[battery] = battery_bank.data[i];
+				digit_indexes[battery] = i;
+			}
 		}
 	}
-	first_digit -= '0';
 
-	uint8_t second_digit = 0;
-	for (uint8_t i = first_digit_index + 1; i < battery_bank.len; i++) {
-		if (battery_bank.data[i] > second_digit) {
-			second_digit = battery_bank.data[i];
-		}
-	}
-	second_digit -= '0';
-
-	return first_digit * 10 + second_digit;
+	return str_to_int64_t((struct str) { .s = digits, .len = BATTERIES });
 }
 
 int main()
@@ -29,10 +28,12 @@ int main()
 	struct vec *batteries = lines_new("input.txt");
 
 	
-	uint64_t total_joltage = 0;
+	int64_t total_joltage = 0;
 	for (uint32_t i = 0; i < batteries->len; i++) {
-		uint8_t this_joltage = best_joltage(vec_get_shortstr(batteries, i));
-		total_joltage += this_joltage;
+		int64_t this_joltage = best_joltage(vec_get_shortstr(batteries, i));
+		shortstr_print(vec_get_shortstr(batteries, i));
+		printf(": %" PRIi64 "\n", this_joltage);
+		panic_if_not_equal(ckd_add(&total_joltage, total_joltage, this_joltage), false);
 	}
 
 	printf("Total: %" PRIu64 "\n", total_joltage);
