@@ -1,6 +1,7 @@
 #include "panic.c"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Struct for storing rectangular grid
 struct grid {
@@ -158,4 +159,12 @@ void grid_set(struct grid *grid, long x, long y, char c)
 		return;
 	}
 	grid->data[y * grid->width + x] = c;
+}
+
+// Copy a grid from src to dest (src should be the same size)
+void grid_copy(struct grid *restrict dest, struct grid *restrict src)
+{
+	panic_if_not_equal(dest->width, src->width);
+	panic_if_not_equal(dest->height, src->height);
+	memcpy(dest->data, src->data, dest->width * dest->height);
 }

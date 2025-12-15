@@ -76,11 +76,11 @@
       "-x",
       "c",
       "-o",
-      "/tmp/main-693427.o",
+      "/tmp/main-7218e6.o",
       "main.c"
     ],
     "directory": "/home/alex/git/badventofcode/2025/day4",
     "file": "/home/alex/git/badventofcode/2025/day4/main.c",
-    "output": "/tmp/main-693427.o"
+    "output": "/tmp/main-7218e6.o"
   }
 ]
