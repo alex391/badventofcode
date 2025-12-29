@@ -1,11 +1,11 @@
-#include <stdint.h>
 #include <stddef.h>
+#include "ints.c"
 
-uint32_t hash(const void *data, size_t size)
+u32 hash(const void *data, usize size)
 {
-	uint32_t hash = 5381;
-	for(size_t i = 0; i < size; i++) {
-		hash = ((hash << 5) + hash) + ((char *)data)[i];
+	u32 hash = 5381;
+	for(usize i = 0; i < size; i++) {
+		hash = ((hash << 5) + hash) + ((c8 *)data)[i];
 	}
 	return hash;
 }

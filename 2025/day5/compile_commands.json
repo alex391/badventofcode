@@ -3,6 +3,7 @@
     "arguments": [
       "/home/linuxbrew/.linuxbrew/bin/clang",
       "-c",
+      "-g",
       "-std=c2x",
       "-Wall",
       "-Werror",
@@ -44,6 +45,8 @@
       "x86-64",
       "-tune-cpu",
       "generic",
+      "-debug-info-kind=constructor",
+      "-dwarf-version=5",
       "-debugger-tuning=gdb",
       "-fdebug-compilation-dir=/home/alex/git/badventofcode/2025/day5",
       "-fcoverage-compilation-dir=/home/alex/git/badventofcode/2025/day5",
@@ -76,11 +79,11 @@
       "-x",
       "c",
       "-o",
-      "/tmp/main-b06110.o",
+      "/tmp/main-e0ac37.o",
       "main.c"
     ],
     "directory": "/home/alex/git/badventofcode/2025/day5",
     "file": "/home/alex/git/badventofcode/2025/day5/main.c",
-    "output": "/tmp/main-b06110.o"
+    "output": "/tmp/main-e0ac37.o"
   }
 ]

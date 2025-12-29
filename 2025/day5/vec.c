@@ -2,20 +2,20 @@
 #define VEC_C
 
 #include <stdlib.h>
-#include <stdint.h>
 #include "panic.c"
 #include <string.h>
 #include "slice.c"
 #include <stdckdint.h>
+#include "ints.c"
 
 
-constexpr uint32_t DEFAULT_CAPACITY = 10;
+constexpr u32 DEFAULT_CAPACITY = 10;
 
 struct vec {
 	void *data;
-	uint32_t len;
-	uint32_t capacity;
-	size_t item_size;
+	u32 len;
+	u32 capacity;
+	usize item_size;
 };
 
 // Returns a new vec, guaranteed to not be null, allocated with calloc (so len,
@@ -26,7 +26,7 @@ struct vec *vec_new_cleared()
 }
 
 // Return a vec new vec, with data initialized
-struct vec *vec_new(size_t item_size)
+struct vec *vec_new(usize item_size)
 {
 	struct vec *new = vec_new_cleared();
 	new->capacity = DEFAULT_CAPACITY;
@@ -49,7 +49,7 @@ void vec_free(struct vec *freeing)
 
 // Add data to the end of the vec, resizing if necessary
 // You may want to write a convenience for this for your type (see below)
-void vec_push(struct vec *vec, void *data)
+void vec_push(struct vec * restrict vec, void * restrict data)
 {
 	if (vec->len == vec->capacity) {
 		panic_if_equal(ckd_mul(&vec->capacity, vec->capacity, 2), true);
@@ -61,15 +61,15 @@ void vec_push(struct vec *vec, void *data)
 	panic_if_equal(ckd_add(&vec->len, vec->len, 1), true);
 }
 
-void vec_push_int32_t(struct vec *vec, int32_t data)
+void vec_push_i32(struct vec *vec, i32 data)
 {
-	panic_if_not_equal(vec->item_size, sizeof(uint32_t));
+	panic_if_not_equal(vec->item_size, sizeof(i32));
 	vec_push(vec, &data);
 }
 
-void vec_push_int64_t(struct vec *vec, int64_t data)
+void vec_push_i64(struct vec *vec, i64 data)
 {
-	panic_if_not_equal(vec->item_size, sizeof(int64_t));
+	panic_if_not_equal(vec->item_size, sizeof(i64));
 	vec_push(vec, &data);
 }
 
@@ -87,22 +87,27 @@ void vec_push_slice(struct vec *vec, struct slice slice)
 
 // Put the item at the index into out
 // You may want to write a convenience for this for your type (see below)
-void vec_get(struct vec *vec, uint32_t index, void *out)
+void vec_get(struct vec * restrict vec, u32 index, void * restrict out)
 {
+#if NDEBUG
+#else
+	panic_if_greater(index, vec->len);
+	panic_if_equal(index, vec->len);
+#endif
 	if (index < vec->len) {
 		memcpy(out, vec->data + (index * vec->item_size), vec->item_size);
 	}
 }
 
-int32_t vec_get_int32_t(struct vec *vec, uint32_t index)
+i32 vec_get_i32(struct vec *vec, u32 index)
 {
-	panic_if_not_equal(vec->item_size, sizeof(int32_t));
-	int32_t out = 0;
+	panic_if_not_equal(vec->item_size, sizeof(i32));
+	i32 out = 0;
 	vec_get(vec, index, &out);
 	return out;
 }
 
-union shortstr vec_get_shortstr(struct vec *vec, uint32_t index)
+union shortstr vec_get_shortstr(struct vec *vec, u32 index)
 {
 	panic_if_not_equal(vec->item_size, sizeof(union shortstr));
 	union shortstr out = { 0 };
@@ -110,7 +115,7 @@ union shortstr vec_get_shortstr(struct vec *vec, uint32_t index)
 	return out;
 }
 
-struct slice vec_get_slice(struct vec *vec, uint32_t index)
+struct slice vec_get_slice(struct vec *vec, u32 index)
 {
 	panic_if_not_equal(vec->item_size, sizeof(struct slice));
 	struct slice out = { 0 };
@@ -124,16 +129,30 @@ struct slice vec_get_slice(struct vec *vec, uint32_t index)
 void vec_pop(struct vec *vec, void *out)
 {
 	vec_get(vec, vec->len, out);
-	uint32_t new_len = 0;
-	bool underflowed = ckd_sub(&new_len, vec->len, 1);
+	u32 new_len = 0;
+	b8 underflowed = ckd_sub(&new_len, vec->len, 1);
 	if (underflowed) {
 		return;
 	}
 	vec->len = new_len;
 }
 
+// Set the item at the given index to in
+void vec_set(struct vec * vec, u32 index, void *in)
+{
+#if NDEBUG
+	panic_if_greater(index, vec->len);
+	panic_if_equal(index, vec->len);
+#else
+	if (index >= vec->len) {
+		return;
+	}
+#endif
+	memmove(vec->data + (index * vec->item_size), in, vec->item_size);
+}
+
 // Sort (wrapper for qsort)
-void vec_sort(struct vec *vec, int (*comp)(const void *lhs, const void *rhs))
+void vec_sort(struct vec *vec, i32 (*comp)(const void *lhs, const void *rhs))
 {
 	qsort(vec->data, vec->len, vec->item_size, comp);
 }

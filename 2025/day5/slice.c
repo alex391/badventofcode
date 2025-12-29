@@ -1,34 +1,32 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include "panic.c"
 #include <ctype.h>
 #include "vec.c"
 #include <limits.h>
 #include <assert.h>
-#include <inttypes.h>
 #include <stdckdint.h>
+#include "ints.c"
 
 #ifndef SLICE_C
 #define SLICE_C
 
 // -INT64_MIN
-#define POSITIVE_INT64_MIN (9223372036854775808ull)
-// The number of digits including the minus sign of LLONG_MIN (because llabs will fail!)
-#define LLONG_MIN_LENGTH (20)
+constexpr u64 POSITIVE_INT64_MIN = (9223372036854775808ull);
+// The number of digits including the minus sign of INT64_MIN (because llabs will fail!)
+constexpr u8 INT64_MIN_LENGTH = (20);
 
-struct vec *vec_new(size_t item_size);
+struct vec *vec_new(usize item_size);
 // For reaitively short strings
 // Unlike str, as long as all reads are done through data, and all indexes fit
-// in uint8_t, all reads are safe, so reads are unchecked
+// in u8, all reads are safe, so reads are unchecked
 union shortstr {
 	struct {
-		char s[UINT8_MAX]; // 255 bytes of char
-		uint8_t len; // and 1 byte of len
+		c8 s[UINT8_MAX]; // 255 bytes of char
+		u8 len; // and 1 byte of len
 	};
-	char data[UINT8_MAX + 1]; // or, all 256 bytes (uint8_t)data[UINT8_MAX] gets you the len
+	c8 data[UINT8_MAX + 1]; // or, all 256 bytes (u8)data[UINT8_MAX] gets you the len
 };
 
 // A string slice, never read or write more than len chars from s
@@ -36,8 +34,8 @@ union shortstr {
 // Note intentional simalarity to slice below - str can own it's memory,
 // slice does not
 struct str {
-	char *s;
-	uint32_t len;
+	c8 *s;
+	u32 len;
 };
 
 // A slice that stores its elemnts in a diffrenet array
@@ -45,18 +43,18 @@ struct str {
 // and since it's only 8 bytes you should just pass it by copy usually
 // indexes into this array from index to index + (len - 1) should be valid
 struct slice {
-	uint32_t index;
-	uint32_t len;
+	u32 index;
+	u32 len;
 };
 
 void vec_push_slice(struct vec *vec, struct slice slice);
 
 // Convert null terminated to shortstr
-union shortstr shortstr_from_null_terminated(const char *null_terminated)
+union shortstr shortstr_from_null_terminated(const c8 *null_terminated)
 {
 	union shortstr new_shortstr = { 0 };
 	strncpy(new_shortstr.data, null_terminated, sizeof(new_shortstr.data)); // the null will end up in len, which is fine
-	size_t len = strlen(new_shortstr.data); // Just this once, data is null terminated
+	usize len = strlen(new_shortstr.data); // Just this once, data is null terminated
 	new_shortstr.len = len;
 	return new_shortstr;
 }
@@ -70,7 +68,7 @@ struct str shortstr_to_str(union shortstr converting)
 
 // index into a slice of an array of char
 // if i is >= indexed_len.len, return 0 instead
-char checked_get_char(struct slice slice, const char *arr, uint32_t i)
+char checked_get_char(struct slice slice, const char *arr, u32 i)
 {
 	if (i < slice.len) {
 		return arr[i + slice.index];
@@ -80,7 +78,7 @@ char checked_get_char(struct slice slice, const char *arr, uint32_t i)
 
 // write into a slice of an array of char
 // if i is >= index_len.len, do nothing instead
-void checked_set_char(struct slice index_len, char *arr, uint32_t i, char value)
+void checked_set_char(struct slice index_len, c8 *arr, u32 i, c8 value)
 {
 	if (i < index_len.len) {
 		arr[i + index_len.index] = value;
@@ -88,9 +86,9 @@ void checked_set_char(struct slice index_len, char *arr, uint32_t i, char value)
 }
 
 // print the characters in this slice
-void slice_print(struct slice slice, char *arr)
+void slice_print(struct slice slice, c8 *arr)
 {
-	for (uint32_t i = 0; i < slice.len; i++) {
+	for (u32 i = 0; i < slice.len; i++) {
 		putchar(checked_get_char(slice, arr, i));
 	}
 }
@@ -104,7 +102,7 @@ struct str *str_new_empty()
 }
 
 // allocate a new str with all '\0' in s
-struct str *str_new_cleared(uint32_t len) 
+struct str *str_new_cleared(u32 len) 
 {
 	struct str *cleared = str_new_empty();
 	cleared->s = calloc(len, sizeof(char));
@@ -117,7 +115,7 @@ struct str *str_new_cleared(uint32_t len)
 // the buffer should have at least len chars in it
 // Note: consider using just 
 // struct str s = { .s = (some buffer or sring constant), .len = (length of that buffer) }
-struct str *str_new(const char *buff, uint32_t len)
+struct str *str_new(const c8 *buff, u32 len)
 {
 	struct str *str = str_new_empty();
 	str->s = malloc(len);
@@ -133,7 +131,7 @@ struct str *str_new(const char *buff, uint32_t len)
 // struct str s = { .s = (your buffer), .len = (sizeof(your buffer))
 struct str *str_new_from_null_terminated(const char *null_string)
 {
-	size_t len = strlen(null_string);
+	usize len = strlen(null_string);
 	if (len > UINT32_MAX) {
 		len = UINT32_MAX;
 	}
@@ -154,7 +152,7 @@ void str_free(struct str *freeing)
 // Bounds checked get, returning 0 if the bounds check fails
 // It's usually cheap and sometimes free to use this function instead of
 // s->s[i], so always use it
-char str_get(const struct str *s, uint32_t i)
+c8 str_get(const struct str *s, u32 i)
 {
 	return checked_get_char((struct slice) { .index = 0, .len = s->len }, s->s, i);
 }
@@ -162,7 +160,7 @@ char str_get(const struct str *s, uint32_t i)
 // Checked set, do nothing if i is out of bounds
 // It's usually cheap and sometimes free to use this function instead of
 // s->s[i] = c, so always use it
-void str_set(struct str *s, uint32_t i, char c)
+void str_set(struct str *s, u32 i, char c)
 {
 	checked_set_char((struct slice) { .index = 0, .len = s->len }, s->s, i, c);
 }
@@ -170,7 +168,7 @@ void str_set(struct str *s, uint32_t i, char c)
 // Allocate a new char array with a '\0' at the end (at new_array[s->len])
 char *str_to_new_null_terminated(struct str *s)
 {
-	char *null_terminated = malloc(s->len + 1);
+	c8 *null_terminated = malloc(s->len + 1);
 	strncpy(null_terminated, s->s, s->len);
 	return null_terminated;
 }
@@ -194,12 +192,12 @@ void shortstr_print(union shortstr s)
 }
 
 // Check if a contains the same characters as b
-bool str_equal(const struct str *a, const struct str *b)
+b8 str_equal(const struct str *a, const struct str *b)
 {
 	if (a->len != b->len) {
 		return false;
 	}
-	for (uint32_t i = 0; i < a->len; i++) {
+	for (u32 i = 0; i < a->len; i++) {
 		if (str_get(a, i) != str_get(b, i)) {
 			return false;
 		}
@@ -209,12 +207,12 @@ bool str_equal(const struct str *a, const struct str *b)
 }
 
 // Check if a contains the same characters as b
-bool shortstr_equal(union shortstr a, union shortstr b)
+b8 shortstr_equal(union shortstr a, union shortstr b)
 {
 	if (a.len != b.len) {
 		return false;
 	}
-	for (uint8_t i = 0; i < a.len; i++) {
+	for (u8 i = 0; i < a.len; i++) {
 		if (a.s[i] != b.s[i]) {
 			return false;
 		}
@@ -224,7 +222,7 @@ bool shortstr_equal(union shortstr a, union shortstr b)
 
 
 // Parse str into an int64_t (undocumented (but defined) if the str isn't digits)
-int64_t str_to_int64_t(struct str s)
+i64 str_to_i64(struct str s)
 {
 	if (s.len == 0) {
 		return 0;
@@ -275,10 +273,10 @@ int64_t str_to_int64_t(struct str s)
 	return value * sign;
 }
 
-int32_t str_to_int32_t(struct str s)
+i32 str_to_i32_t(struct str s)
 {
 
-	int64_t converted = str_to_int64_t(s);
+	int64_t converted = str_to_i64(s);
 #if NDEBUG
 	if (converted > INT32_MAX || converted < INT32_MIN) {
 		return 0;
@@ -291,9 +289,9 @@ int32_t str_to_int32_t(struct str s)
 }
 
 // Returns the number of digits in i (so 1 returns 1, -1 returns 2, 10 returns 2, etc)
-uint8_t int32_t_digits(int32_t i)
+u8 i32_digits(i32 i)
 {
-	long long abs = llabs(i); // because INT_MIN would overflow abs()
+	i64 abs = llabs(i); // because INT_MIN would overflow abs()
 	uint8_t minus = i < 0;
 	uint8_t digits = 1;
 
@@ -311,13 +309,13 @@ uint8_t int32_t_digits(int32_t i)
 }
 
 // Returns the number of digits in i (so 1 returns 1, -1 returns 2, 10 returns 2, etc)
-uint8_t int64_t_digits(int64_t i)
+u8 i64_digits(i64 i)
 {
-	if (i == LLONG_MIN) {
+	if (i == INT64_MIN) {
 		// avoid overflow in llabs
-		return LLONG_MIN_LENGTH;
+		return INT64_MIN_LENGTH;
 	}
-	long long abs = llabs(i);
+	i64 abs = llabs(i);
 	uint8_t minus = i < 0;
 	uint8_t digits = 1;
 
@@ -335,9 +333,9 @@ uint8_t int64_t_digits(int64_t i)
 }
 
 // Write integer to a new str (allocated with calloc)
-struct str *int32_t_to_new_str(int32_t i)
+struct str *i32_to_new_str(i32 i)
 {
-	uint8_t length = int32_t_digits(i);
+	uint8_t length = i32_digits(i);
 	struct str *new_str = str_new_cleared(length + 1); // + 1 for snprintf
 	snprintf(new_str->s, length + 1, "%" PRIi32, i);
 	new_str->len = length; // Don't rely on the extra '\0' here
@@ -345,9 +343,9 @@ struct str *int32_t_to_new_str(int32_t i)
 }
 
 // Write integer to a new str (allocated with calloc)
-struct str *int64_t_to_new_str(int64_t i)
+struct str *int64_t_to_new_str(i64 i)
 {
-	uint8_t length = int64_t_digits(i);
+	uint8_t length = i64_digits(i);
 	struct str *new_str = str_new_cleared(length + 1); // + 1 for snprintf
 	snprintf(new_str->s, length + 1, "%" PRIi64, i);
 	new_str->len = length; // Don't rely on the extra '\0' here
@@ -355,7 +353,7 @@ struct str *int64_t_to_new_str(int64_t i)
 }
 
 // return true if c is equal to any character in s
-bool char_in(char c, struct str s)
+b8 char_in(c8 c, struct str s)
 {
 	for (uint32_t i = 0; i < s.len; i++) {
 		if (c == str_get(&s, i)) {
