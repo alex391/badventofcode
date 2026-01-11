@@ -27,7 +27,7 @@ int main()
 				operator = c;
 				break;
 			}
-			panic_if_greater(digits.len, MAX_DIGITS);
+			panic_if_equal(digits.len, MAX_DIGITS);
 			digits.s[digits.len++] = c;
 		}
 		if (digits.len == 0) {
@@ -37,7 +37,7 @@ int main()
 
 		switch (operator) {
 			case 0:
-				panic_if_greater(numbers_count, MAX_NUMBERS);
+				panic_if_equal(numbers_count, MAX_NUMBERS);
 				numbers[numbers_count++] = number;
 				break;
 			case '+':

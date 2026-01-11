@@ -76,11 +76,11 @@
       "-x",
       "c",
       "-o",
-      "/tmp/main-c9a672.o",
+      "/tmp/main-e4edb2.o",
       "main.c"
     ],
     "directory": "/home/alex/git/badventofcode/2025/day6",
     "file": "/home/alex/git/badventofcode/2025/day6/main.c",
-    "output": "/tmp/main-c9a672.o"
+    "output": "/tmp/main-e4edb2.o"
   }
 ]
