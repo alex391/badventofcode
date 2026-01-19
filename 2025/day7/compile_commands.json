@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-std=c2x",
+      "-Wall",
+      "-Werror",
+      "-Wextra",
+      "-o",
+      "main",
+      "main.c"
+    ],
+    "directory": "/home/alex/git/badventofcode/2025/day7",
+    "file": "/home/alex/git/badventofcode/2025/day7/main.c",
+    "output": "/home/alex/git/badventofcode/2025/day7/main"
+  }
+]
