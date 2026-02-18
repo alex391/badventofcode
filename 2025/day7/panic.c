@@ -61,4 +61,43 @@ void panic_if_not_equal(i64 i, i64 good)
 	}
 }
 
+// Same as above, but print a line number also
+void panic_if_less_line(i64 i, i64 min_good, i32 line)
+{
+	if (i < min_good) {
+		fprintf(stderr, "i is expected to not be less than " Pu64 " line %d", min_good, line);
+		exit(1);
+	}
+}
+
+// Exit if i == bad, also print line number
+void panic_if_equal_line(i64 i, i64 bad, i32 line)
+{
+	if (i == bad) {
+		fprintf(stderr, "i is expected to not be " Pi64 " line %d", bad, line);
+		exit(1);
+	}
+}
+
+// Exit if i > max_good, also print line number
+void panic_if_greater_line(i64 i, i64 max_good, i32 line)
+{
+	if (i > max_good) {
+		fprintf(stderr, "i is expected to not be greater than " Pi64 " line %d", max_good, line);
+		exit(1);
+	}
+}
+// Exit always
+[[noreturn]]
+void panic_unconditionally() {
+	fprintf(stderr, "This should be unreachable!!");
+	exit(1);
+}
+
+// Exit always, and print line
+[[noreturn]]
+void panic_unconditionally_line(i32 line) {
+	fprintf(stderr, "line %d should be unreachable!!", line);
+	exit(1);
+}
 #endif
